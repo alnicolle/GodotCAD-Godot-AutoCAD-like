@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4wd0vpkr7673"]
+
+[ext_resource type="Script" uid="uid://dvdnpj27o0nfy" path="res://Scripts/DynamicInput.gd" id="1_106ub"]
+
+[node name="DynamicInput" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_106ub")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LineEdit" type="LineEdit" parent="PanelContainer"]
+layout_mode = 2

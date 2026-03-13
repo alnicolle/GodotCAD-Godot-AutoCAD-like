@@ -1,0 +1,198 @@
+[gd_scene load_steps=12 format=3 uid="uid://b1hf4i8dja1lq"]
+
+[ext_resource type="Script" uid="uid://bynnn0jdu0jcf" path="res://Scripts/Main.gd" id="1_uu6xs"]
+[ext_resource type="Script" uid="uid://b57uidegbyimv" path="res://Scripts/DrawingManager.gd" id="2_r0du0"]
+[ext_resource type="Script" uid="uid://d2ey1orannkpo" path="res://Scripts/GridSystem.gd" id="3_cm0pq"]
+[ext_resource type="Script" uid="uid://wacwkvnql1x0" path="res://Scripts/CameraManager.gd" id="3_r0du0"]
+[ext_resource type="Script" uid="uid://cosp3m2iqj74n" path="res://Scripts/ConsoleManager.gd" id="5_3dxm6"]
+[ext_resource type="Script" uid="uid://bdj2l6fonh0fi" path="res://Scripts/CADCursor.gd" id="5_fos0i"]
+[ext_resource type="Script" uid="uid://46dvtatah1qs" path="res://Scripts/SnapMarker.gd" id="5_wkp8b"]
+[ext_resource type="Script" uid="uid://b2ehln8tvwftk" path="res://Scripts/SnapManager.gd" id="6_trn2v"]
+[ext_resource type="Texture2D" uid="uid://by81mpaqotpy6" path="res://Ressources/aimant.png" id="7_03owx"]
+[ext_resource type="Script" uid="uid://b0hvlg70s6xcp" path="res://Scripts/SelectionManager.gd" id="7_lgr22"]
+[ext_resource type="PackedScene" uid="uid://b4wd0vpkr7673" path="res://DynamicInput.tscn" id="10_20pc6"]
+
+[node name="Main" type="Node2D" node_paths=PackedStringArray("snap_manager", "selection_manager", "fps_label")]
+script = ExtResource("1_uu6xs")
+snap_manager = NodePath("GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer")
+selection_manager = NodePath("SelectionManager")
+fps_label = NodePath("GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/HBoxContainer/FPSLabel")
+
+[node name="World" type="Node2D" parent="." node_paths=PackedStringArray("snap_manager", "dynamic_input")]
+z_index = -1
+script = ExtResource("2_r0du0")
+snap_manager = NodePath("../GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer")
+dynamic_input = NodePath("../GUI/DynamicInput")
+
+[node name="Background" type="CanvasLayer" parent="World"]
+layer = -1
+visible = false
+
+[node name="ColorRect" type="ColorRect" parent="World/Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12941177, 0.12941177, 0.12941177, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="GridSystem" type="Node2D" parent="World"]
+script = ExtResource("3_cm0pq")
+
+[node name="Entities" type="Node2D" parent="World"]
+
+[node name="Preview" type="Node2D" parent="World"]
+
+[node name="Camera2D" type="Camera2D" parent="World"]
+script = ExtResource("3_r0du0")
+
+[node name="SnapMarker" type="Node2D" parent="World"]
+z_index = 1000
+script = ExtResource("5_wkp8b")
+
+[node name="GUI" type="CanvasLayer" parent="."]
+
+[node name="Layout" type="Control" parent="GUI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="TopRibbon" type="Panel" parent="GUI/Layout"]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 170.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/TopRibbon"]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 170.0
+
+[node name="BtnPolyligne" type="Button" parent="GUI/Layout/TopRibbon/HBoxContainer"]
+layout_mode = 2
+text = "Polyligne"
+
+[node name="BtnCercle" type="Button" parent="GUI/Layout/TopRibbon/HBoxContainer"]
+layout_mode = 2
+text = "Cercle"
+
+[node name="BtnExport" type="Button" parent="GUI/Layout/TopRibbon/HBoxContainer"]
+layout_mode = 2
+text = "Export DXF"
+
+[node name="BtnImport" type="Button" parent="GUI/Layout/TopRibbon/HBoxContainer"]
+layout_mode = 2
+text = "Import DXF"
+
+[node name="BottomBar" type="PanelContainer" parent="GUI/Layout"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar"]
+layout_mode = 2
+
+[node name="SpacerLeft" type="Control" parent="GUI/Layout/BottomBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="FPSLabel" type="Label" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/HBoxContainer"]
+layout_mode = 2
+
+[node name="ConsolePanel" type="PanelContainer" parent="GUI/Layout/BottomBar/HBoxContainer"]
+custom_minimum_size = Vector2(800, 75)
+layout_mode = 2
+script = ExtResource("5_3dxm6")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/ConsolePanel"]
+layout_mode = 2
+
+[node name="History" type="RichTextLabel" parent="GUI/Layout/BottomBar/HBoxContainer/ConsolePanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CommandLine" type="LineEdit" parent="GUI/Layout/BottomBar/HBoxContainer/ConsolePanel/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Tapez une commande..."
+
+[node name="SpacerRight" type="Control" parent="GUI/Layout/BottomBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SnapContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerRight" node_paths=PackedStringArray("snap_marker")]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("6_trn2v")
+snap_marker = NodePath("../../../../../../World/SnapMarker")
+
+[node name="BtnSnapSettings" type="MenuButton" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer"]
+layout_mode = 2
+text = "▲"
+item_count = 4
+popup/item_0/text = "Extrémité"
+popup/item_0/checkable = 1
+popup/item_0/checked = true
+popup/item_0/id = 0
+popup/item_1/text = "Milieu"
+popup/item_1/checkable = 1
+popup/item_1/checked = true
+popup/item_1/id = 1
+popup/item_2/text = "Intersection"
+popup/item_2/checkable = 1
+popup/item_2/checked = true
+popup/item_2/id = 2
+popup/item_3/text = "Perpendiculaire"
+popup/item_3/checkable = 1
+popup/item_3/checked = true
+popup/item_3/id = 3
+
+[node name="CheckSnap" type="CheckBox" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer"]
+layout_mode = 2
+tooltip_text = "Accrochages"
+icon = ExtResource("7_03owx")
+
+[node name="ExportDialog" type="FileDialog" parent="GUI"]
+oversampling_override = 1.0
+size = Vector2i(640, 400)
+access = 2
+filters = PackedStringArray("*.dxf")
+
+[node name="ImportDialog" type="FileDialog" parent="GUI"]
+title = "Open a File"
+size = Vector2i(640, 400)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.dxf")
+
+[node name="CADCursor" type="Node2D" parent="GUI"]
+script = ExtResource("5_fos0i")
+
+[node name="DynamicInput" parent="GUI" instance=ExtResource("10_20pc6")]
+
+[node name="SelectionManager" type="Node2D" parent="." node_paths=PackedStringArray("world", "camera", "cad_cursor", "snap_manager")]
+script = ExtResource("7_lgr22")
+world = NodePath("../World")
+camera = NodePath("../World/Camera2D")
+cad_cursor = NodePath("../GUI/CADCursor")
+snap_manager = NodePath("../GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer")
+
+[connection signal="pressed" from="GUI/Layout/TopRibbon/HBoxContainer/BtnPolyligne" to="." method="_on_polyligne_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/HBoxContainer/BtnCercle" to="." method="_on_circle_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/HBoxContainer/BtnExport" to="." method="_on_export_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/HBoxContainer/BtnImport" to="." method="_on_import_pressed"]
+[connection signal="file_selected" from="GUI/ExportDialog" to="." method="_on_export_dialog_file_selected"]
+[connection signal="file_selected" from="GUI/ImportDialog" to="." method="import_dxf"]

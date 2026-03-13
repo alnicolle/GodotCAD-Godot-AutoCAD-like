@@ -1,0 +1,165 @@
+;;
+;;  Fichier Définition Type de ligne ISO d'AutoCAD
+;;  Version 2.0
+;;
+;;  Copyright 2023 Autodesk, Inc.  All rights reserved.
+;;
+;;  Use of this software is subject to the terms of the Autodesk license 
+;;  agreement provided at the time of installation or download, or which 
+;;  otherwise accompanies this software in either electronic or hard copy form.
+;;
+;;  Remarque: afin de faciliter la migration de ce fichier lors de la mise à 
+;;  niveau vers une version ultérieure d'AutoCAD, il est recommandé d'ajouter
+;;  vos informations de personnalisation à la section Types de lignes
+;;  définis par l'utilisateur à la fin de ce fichier.
+;;
+;;  personnalisé à l'échelle ISO
+;;
+*BORDURE,Bordure __ __ . __ __ . __ __ . __ __ . __ __ .
+A, 12.7, -6.35, 12.7, -6.35, 0, -6.35 
+*BORDURE2,Bordure (x.5) __.__.__.__.__.__.__.__.__.__.__.
+A, 6.35, -3.175, 6.35, -3.175, 0, -3.175 
+*BORDUREX2,Bordure (x2) ____  ____  .  ____  ____  .  ___
+A, 25.4, -12.7, 25.4, -12.7, 0, -12.7 
+
+*AXES,Centre ____ _ ____ _ ____ _ ____ _ ____ _ ____
+A, 31.75, -6.35, 6.35, -6.35 
+*AXES2,Centre (x.5) ___ _ ___ _ ___ _ ___ _ ___ _ ___
+A, 19.05, -3.175, 3.175, -3.175 
+*AXESX2,Centre (x2) ________  __  ________  __  _____
+A, 63.5, -12.7, 12.7, -12.7 
+
+*TIRETPT,Tiret point __ . __ . __ . __ . __ . __ . __ . __
+A, 12.7, -6.35, 0, -6.35 
+*TIRETPT2,Tiret point (x.5) _._._._._._._._._._._._._._._.
+A, 6.35, -3.175, 0, -3.175 
+*TIRETPTX2,Tiret point (x2) ____  .  ____  .  ____  .  ___
+A, 25.4, -12.7, 0, -12.7 
+
+*INTERROMPU,Interrompu __ __ __ __ __ __ __ __ __ __ __ __ __ _
+A, 12.7, -6.35 
+*INTERROMPU2,Interrompu (x.5) _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+A, 6.35, -3.175 
+*INTERROMPUX2,Interrompu (x2) ____  ____  ____  ____  ____  ___
+A, 25.4, -12.7 
+
+*DIVISE,Divisé ____ . . ____ . . ____ . . ____ . . ____
+A, 12.7, -6.35, 0, -6.35, 0, -6.35 
+*DIVISE2,Divisé (x.5) __..__..__..__..__..__..__..__.._
+A, 6.35, -3.175, 0, -3.175, 0, -3.175 
+*DIVISEX2,Divisé (x2) ________  .  .  ________  .  .  _
+A, 25.4, -12.7, 0, -12.7, 0, -12.7 
+
+*CACHE,Caché __ __ __ __ __ __ __ __ __ __ __ __ __ __
+A, 6.35, -3.175 
+*CACHE2,Caché (x.5) _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+A, 3.175, -1.5875 
+*CACHEX2,Caché (x2) ____ ____ ____ ____ ____ ____ ____ 
+A, 12.7, -6.35 
+
+*FANTOME,Fantôme ______  __  __  ______  __  __  ______ 
+A, 31.75, -6.35, 6.35, -6.35, 6.35, -6.35 
+*FANTOME2,Fantôme (x.5) ___ _ _ ___ _ _ ___ _ _ ___ _ _
+A, 15.875, -3.175, 3.175, -3.175, 3.175, -3.175 
+*FANTOMEX2,Fantôme (x2) ____________    ____    ____   _
+A, 63.5, -12.7, 12.7, -12.7, 12.7, -12.7 
+
+;;
+;;  Des types de lignes ISO 128 (ISO/DIS 12011) ont été ajoutés. 
+;;
+;;  La taille des segments de ligne pour chaque ligne ISO définie, est 
+;;  elle-même définie pour une utilisation avec une épaisseur de plume de 1 mm. Pour utiliser 
+;;  d'autres épaisseurs de plumes ISO prédéfinies, la ligne doit être redimensionnée 
+;;  appropriée (par exemple une épaisseur de plume de 0,5 mm -> ltscale 0.5).
+;;
+*ACAD_ISO02W100,ISO interrompu __ __ __ __ __ __ __ __ __ __ __ __ __
+A,12,-3
+*ACAD_ISO03W100,ISO tiret espace __    __    __    __    __    __
+A,12,-18
+*ACAD_ISO04W100,ISO tiret long point ____ . ____ . ____ . ____ . _
+A,24,-3,0,-3
+*ACAD_ISO05W100,ISO tiret long deux points ____ .. ____ .. ____ . 
+A,24,-3,0,-3,0,-3
+*ACAD_ISO06W100,ISO tiret long trois points ____ ... ____ ... ____
+A,24,-3,0,-3,0,-3,0,-3
+*ACAD_ISO08W100,ISO tiret long tiret court ____ __ ____ __ ____ _
+A,24,-3,6,-3
+*ACAD_ISO09W100,ISO tiret long deux tirets courts ____ __ __ ____
+A,24,-3,6,-3,6,-3
+*ACAD_ISO10W100,ISO tiret point __ . __ . __ . __ . __ . __ . __ . 
+A,12,-3,0,-3
+*ACAD_ISO11W100,ISO deux tirets point __ __ . __ __ . __ __ . __ _
+A,12,-3,12,-3,0,-3
+*ACAD_ISO12W100,ISO tiret deux points __ . . __ . . __ . . __ . . 
+A,12,-3,0,-3,0,-3
+*ACAD_ISO13W100,ISO deux tirets deux points __ __ . . __ __ . . _
+A,12,-3,12,-3,0,-3,0,-3
+*ACAD_ISO14W100,ISO tiret trois points __ . . . __ . . . __ . . . _
+A,12,-3,0,-3,0,-3,0,-3
+*ACAD_ISO15W100,ISO deux tirets trois points __ __ . . . __ __ . .
+A,12,-3,12,-3,0,-3,0,-3,0,-3
+
+;;  Types de lignes complexes
+;;
+;;  Des types de lignes complexes ont été ajoutés à ce fichier.
+;;  Vous trouverez ces types de lignes définis dans le fichier LTYPESHP.LIN de la
+;;  Release 13 ainsi qu'intégrés dans le fichier ACAD.LIN de la
+;;  Release 14.
+;;  
+;;  Ces définitions de types de lignes utilisent LTYPESHP.SHX.
+;;
+*LIMITE1,Ligne-cercles ----0-----0----0-----0----0-----0--
+A,6.35,-2.54,[CIRC1,ltypeshp.shx,x=-2.54,s=2.54],-2.54,25.4
+*LIMITE2,Ligne-carrés ----[]-----[]----[]-----[]----[]---
+A,6.35,-2.54,[BOX,ltypeshp.shx,x=-2.54,s=2.54],-2.54,25.4
+*RAILS,Rails -|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-
+A,3.81,[TRACK1,ltypeshp.shx,s=6.35],3.81
+*ISOLATION,Isolation SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+A,.00254,-2.54,[BAT,ltypeshp.shx,x=-2.54,s=2.54],-5.08,[BAT,ltypeshp.shx,r=180,x=2.54,s=2.54],-2.54
+*EAU_CHAUDE,Eau chaude ---- HW ---- HW ---- HW ----
+A,12.7,-5.08,["HW",STANDARD,S=2.54,U=0.0,X=-2.54,Y=-1.27],-5.08
+*GAZ,Gaz ----GAS----GAS----GAS----GAS----GAS----GAS--
+A,12.7,-5.08,["GAS",STANDARD,S=2.54,U=0.0,X=-2.54,Y=-1.27],-6.35
+*ZIGZAG,Zig zag /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+A,.00254,-5.08,[ZIG,ltypeshp.shx,x=-5.08,s=5.08],-10.16,[ZIG,ltypeshp.shx,r=180,x=5.08,s=5.08],-5.08
+;;  Définition du type de ligne correspondant à JIS Z 8312
+;;
+*JIS_08_11,1SASEN11 ___ _ ___ _ ___ _ ___ _ ___ _ ___
+A,11,-.60,.60,-.60
+*JIS_08_15,1SASEN15 ____ _ ____ _ ____ _ ____ _ ____ 
+A,15,-.75,.75,-.75
+*JIS_08_25,1SASEN25 ________  __  ________  __  _____
+A,25,-1.125,.75,-1.125
+*JIS_08_37,1SASEN37 ________  __  ________  __  _____
+A,37.5,-1.125,.75,-1.125
+*JIS_08_50,1SASEN50 _______________  __  ____________
+A,50,-1.125,.75,-1.125
+*JIS_02_0.7,HIDDEN0.75 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+A,.75,-.60
+*JIS_02_1.0,HIDDEN01 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+A,1,-1
+*JIS_02_1.2,HIDDEN01.25  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+A,1.25,-1.25
+*JIS_02_2.0,HIDDEN02 __ __ __ __ __ __ __ __ __ __ __ 
+A,2,-1
+*JIS_02_4.0,HIDDEN04 ____ ____ ____ ____ ____ ____ ____ 
+A,4,-1.5
+*JIS_09_08,2SASEN8 __ _ _ __ _ _ __ _ _ __ _ _ __ _ _ 
+A,8,-.55,.55,-.55,.55,-.55
+*JIS_09_15,2SASEN15 ___ _ _ ___ _ _ ___ _ _ ___ _ _ ___ 
+A,15,-.90,.60,-.90,.60,-.90
+*JIS_09_29,2SASEN29 ______@__  __  ______@__  __  ___
+A,29,-1.2,.70,-1.2,.70,-1.2
+*JIS_09_50,2SASEN50 ____________@__  __  _____________
+A,50,-1.2,.70,-1.2,.70,-1.2
+;;
+
+;;  Types de lignes définis par l'utilisateur
+;;
+;;  Ajoutez à cette section tous les types de lignes que
+;;  vous définissez afin qu'ils soient correctement migrés
+;;  lors de la mise à niveau vers une version ultérieure d'AutoCAD.  
+;;  Si des définitions de types de lignes en double sont trouvées dans
+;;  ce fichier, les définitions de la section Types de lignes définis par
+;;  l'utilisateur auront la priorité sur les définitions figurant plus haut dans ce fichier.
+;;

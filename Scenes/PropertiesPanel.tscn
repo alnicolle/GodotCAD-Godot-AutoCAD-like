@@ -1,0 +1,145 @@
+[gd_scene load_steps=3 format=3 uid="uid://b11sehy1jvl"]
+
+[ext_resource type="Script" uid="uid://c0hwkia1p2gt5" path="res://Scripts/PropertiesPanel.gd" id="1_nvnwp"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_wne35"]
+outline_size = 1
+
+[node name="PropertiesPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(250, 250)
+offset_right = 250.0
+offset_bottom = 351.0
+mouse_filter = 1
+script = ExtResource("1_nvnwp")
+
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="HeaderLabel" type="Label" parent="MainLayout"]
+layout_mode = 2
+mouse_filter = 1
+text = "PROPRIÉTÉS"
+label_settings = SubResource("LabelSettings_wne35")
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ContentVBox" type="VBoxContainer" parent="MainLayout/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LblSectionGeneral" type="Label" parent="MainLayout/ScrollContainer/ContentVBox"]
+layout_mode = 2
+mouse_filter = 1
+text = "--- GÉNÉRAL ---"
+horizontal_alignment = 1
+
+[node name="GridGeneral" type="GridContainer" parent="MainLayout/ScrollContainer/ContentVBox"]
+layout_mode = 2
+columns = 2
+
+[node name="LblCalque" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+text = "Calque :"
+
+[node name="ValueLayer" type="OptionButton" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+
+[node name="LblCouleur" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+text = "Couleur :"
+
+[node name="ValueColor" type="ColorPickerButton" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+edit_alpha = false
+
+[node name="LblTypeLigne" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+text = "Type de ligne :"
+
+[node name="ValueLinetype" type="OptionButton" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "ByLayer"
+popup/item_0/id = 0
+popup/item_1/text = "Continuous"
+popup/item_1/id = 1
+
+[node name="LblEpaisseur" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+text = "Epaisseur :"
+
+[node name="ValueLineweight" type="OptionButton" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+
+[node name="LblEchelleLigne" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+text = "Ech. Ligne :"
+
+[node name="ValueLinetypeScale" type="SpinBox" parent="MainLayout/ScrollContainer/ContentVBox/GridGeneral"]
+layout_mode = 2
+min_value = 0.01
+max_value = 1000.0
+step = 0.1
+value = 0.01
+
+[node name="HSeparator" type="HSeparator" parent="MainLayout/ScrollContainer/ContentVBox"]
+layout_mode = 2
+mouse_filter = 1
+
+[node name="LblSectionGeo" type="Label" parent="MainLayout/ScrollContainer/ContentVBox"]
+layout_mode = 2
+mouse_filter = 1
+text = "--- GÉOMÉTRIE ---"
+horizontal_alignment = 1
+
+[node name="GridGeometry" type="GridContainer" parent="MainLayout/ScrollContainer/ContentVBox"]
+layout_mode = 2
+columns = 2
+
+[node name="LblGeoX" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeometry"]
+layout_mode = 2
+mouse_filter = 1
+text = "Centre X :"
+
+[node name="ValueGeoX" type="SpinBox" parent="MainLayout/ScrollContainer/ContentVBox/GridGeometry"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+min_value = -100000.0
+max_value = 100000.0
+step = 0.1
+suffix = " mm"
+
+[node name="LblGeoY" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeometry"]
+layout_mode = 2
+mouse_filter = 1
+text = "Centre Y :"
+
+[node name="ValueGeoY" type="SpinBox" parent="MainLayout/ScrollContainer/ContentVBox/GridGeometry"]
+layout_mode = 2
+mouse_filter = 1
+min_value = -100000.0
+max_value = 100000.0
+step = 0.1
+suffix = " mm"
+
+[node name="LblGeoRadius" type="Label" parent="MainLayout/ScrollContainer/ContentVBox/GridGeometry"]
+layout_mode = 2
+mouse_filter = 1
+text = "Rayon :"
+
+[node name="ValueGeoRadius" type="SpinBox" parent="MainLayout/ScrollContainer/ContentVBox/GridGeometry"]
+layout_mode = 2
+mouse_filter = 1
+min_value = 0.001
+max_value = 100000.0
+step = 0.001
+value = 0.001
+suffix = " mm"
+
+[connection signal="color_changed" from="MainLayout/ScrollContainer/ContentVBox/GridGeneral/ValueColor" to="." method="_on_property_color_changed"]

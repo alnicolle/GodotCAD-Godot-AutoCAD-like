@@ -1,0 +1,580 @@
+[gd_scene format=3 uid="uid://b1hf4i8dja1lq"]
+
+[ext_resource type="Script" uid="uid://bynnn0jdu0jcf" path="res://Scripts/Main.gd" id="1_hwpts"]
+[ext_resource type="Script" uid="uid://b57uidegbyimv" path="res://Scripts/DrawingManager.gd" id="2_jyqft"]
+[ext_resource type="Script" uid="uid://d2ey1orannkpo" path="res://Scripts/GridSystem.gd" id="3_3tgeq"]
+[ext_resource type="Script" uid="uid://wacwkvnql1x0" path="res://Scripts/CameraManager.gd" id="4_c4ay3"]
+[ext_resource type="Script" uid="uid://46dvtatah1qs" path="res://Scripts/SnapMarker.gd" id="5_aht7i"]
+[ext_resource type="Texture2D" uid="uid://b86wgqa263e1b" path="res://Ressources/polyligne.png" id="6_5jffn"]
+[ext_resource type="Texture2D" uid="uid://cys6kknp6ts5a" path="res://Ressources/cercle.png" id="7_kpo4j"]
+[ext_resource type="Texture2D" uid="uid://dfqpiw35obeko" path="res://Ressources/deplacer.png" id="8_4n42c"]
+[ext_resource type="Texture2D" uid="uid://diehuhrljaitf" path="res://Ressources/arc.png" id="8_aht7i"]
+[ext_resource type="Texture2D" uid="uid://b1qmrr2s4cl2t" path="res://Ressources/rotation.png" id="9_c5snn"]
+[ext_resource type="Texture2D" uid="uid://cp0agr302a6js" path="res://Ressources/echelle.jpg" id="10_xvtyr"]
+[ext_resource type="Texture2D" uid="uid://iyv0hekg3u5v" path="res://Ressources/mirroir.png" id="11_u7mjy"]
+[ext_resource type="Texture2D" uid="uid://mm2qunogu2es" path="res://Ressources/decaler.png" id="12_4yxf6"]
+[ext_resource type="Texture2D" uid="uid://cr2pjk2cf22p6" path="res://Ressources/calque.png" id="13_qta6b"]
+[ext_resource type="Texture2D" uid="uid://b3dtnty10shdd" path="res://Ressources/copier.png" id="14_4n42c"]
+[ext_resource type="Texture2D" uid="uid://ben2j3etun6gr" path="res://Ressources/ajuster.png" id="14_kpo4j"]
+[ext_resource type="Script" uid="uid://darhouud04f2b" path="res://Scripts/LayerMenu.gd" id="14_x3rx7"]
+[ext_resource type="Texture2D" uid="uid://pdtk3jy644a6" path="res://Ressources/reseau.png" id="15_4n42c"]
+[ext_resource type="Script" uid="uid://cosp3m2iqj74n" path="res://Scripts/ConsoleManager.gd" id="15_6heos"]
+[ext_resource type="Script" uid="uid://b2ehln8tvwftk" path="res://Scripts/SnapManager.gd" id="16_vvnwx"]
+[ext_resource type="Texture2D" uid="uid://by81mpaqotpy6" path="res://Ressources/aimant.png" id="17_btbly"]
+[ext_resource type="Texture2D" uid="uid://r4crhbmpy360" path="res://Ressources/orthogonal.png" id="18_vs04g"]
+[ext_resource type="PackedScene" uid="uid://b4wd0vpkr7673" path="res://Scenes/DynamicInput.tscn" id="19_6ehlx"]
+[ext_resource type="Texture2D" uid="uid://bpmk4qac3n7sw" path="res://Ressources/appui_simple.png" id="19_c5snn"]
+[ext_resource type="Script" uid="uid://bdj2l6fonh0fi" path="res://Scripts/CADCursor.gd" id="20_utia5"]
+[ext_resource type="Script" uid="uid://b0hvlg70s6xcp" path="res://Scripts/SelectionManager.gd" id="21_f7hdo"]
+[ext_resource type="PackedScene" uid="uid://bjnuydvkgqir6" path="res://Scenes/LayerDialog.tscn" id="21_jyqft"]
+[ext_resource type="Texture2D" uid="uid://4ebpub26bbi3" path="res://Ressources/articulation.png" id="21_u7mjy"]
+[ext_resource type="Texture2D" uid="uid://c7l3awpr8bd7r" path="res://Ressources/encastrement.png" id="22_4yxf6"]
+[ext_resource type="PackedScene" uid="uid://b11sehy1jvl" path="res://Scenes/PropertiesPanel.tscn" id="22_c4ay3"]
+[ext_resource type="Script" uid="uid://cmm8vutlsekh5" path="res://Scripts/LayerManager.gd" id="22_clvyn"]
+[ext_resource type="Texture2D" uid="uid://bldj2u3f3u4bg" path="res://Ressources/force_ponctuelle.png" id="23_6heos"]
+[ext_resource type="Texture2D" uid="uid://dv7tcbqgdf465" path="res://Ressources/calculatrice.png" id="23_qta6b"]
+[ext_resource type="Script" uid="uid://c2vpvhrnqeaun" path="res://Scripts/LinetypeManager.gd" id="24_3tgeq"]
+[ext_resource type="Texture2D" uid="uid://by0hulcbtcp8f" path="res://Ressources/force_repartie.png" id="24_vvnwx"]
+[ext_resource type="Script" uid="uid://b7oax6vph0j56" path="res://Scripts/CursorManager.gd" id="25_cursor_mgr"]
+
+[node name="Main" type="Node2D" unique_id=242557343 node_paths=PackedStringArray("world", "gui", "export_dialog", "import_dialog", "btn_import", "console", "top_ribbon", "bottom_bar", "btn_move", "btn_copy", "btn_mirror", "btn_rotate", "btn_scale", "btn_offset", "btn_trim", "btn_linetype", "btn_lineweight", "btn_arc", "btn_support_simple", "btn_support_articulation", "btn_support_encastrement", "btn_force_ponctuelle", "btn_force_distributed", "properties_panel", "window_properties", "fps_label", "btn_manage_layers", "cad_cursor", "snap_manager", "selection_manager", "drawing_manager", "layer_manager")]
+script = ExtResource("1_hwpts")
+world = NodePath("World")
+gui = NodePath("GUI")
+export_dialog = NodePath("GUI/ExportDialog")
+import_dialog = NodePath("GUI/ImportDialog")
+btn_import = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1/BtnImport")
+console = NodePath("GUI/Layout/BottomBar/HBoxContainer/ConsolePanel")
+top_ribbon = NodePath("GUI/Layout/TopRibbon")
+bottom_bar = NodePath("GUI/Layout/BottomBar")
+btn_move = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1/BtnDeplacer")
+btn_copy = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2/BtnCopier")
+btn_mirror = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2/BtnMirroir")
+btn_rotate = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1/BtnRotation")
+btn_scale = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1/BtnEchelle")
+btn_offset = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2/BtnDecaler")
+btn_trim = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol3/BtnAjuster")
+btn_linetype = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur/BtnLinetype")
+btn_lineweight = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur/BtnLineweight")
+btn_arc = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnArc")
+btn_support_simple = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnAppuiSimple")
+btn_support_articulation = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnArticulation")
+btn_support_encastrement = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnEncastrement")
+btn_force_ponctuelle = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces/BtnForcePonctuelle")
+btn_force_distributed = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces/BtnForceLineique")
+properties_panel = NodePath("GUI/Properties/PropertiesPanel")
+window_properties = NodePath("GUI/Properties")
+fps_label = NodePath("GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/HBoxContainer/FPSLabel")
+btn_manage_layers = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol1/BtnCalques")
+cad_cursor = NodePath("GUI/CADCursor")
+snap_manager = NodePath("GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer")
+selection_manager = NodePath("SelectionManager")
+drawing_manager = NodePath("World")
+layer_manager = NodePath("LayerManager")
+
+[node name="CursorManager" type="Node" parent="." unique_id=443861691]
+script = ExtResource("25_cursor_mgr")
+
+[node name="World" type="Node2D" parent="." unique_id=1463075637 node_paths=PackedStringArray("snap_manager", "dynamic_input", "btn_ortho", "layer_manager")]
+z_index = -1
+script = ExtResource("2_jyqft")
+snap_manager = NodePath("../GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer")
+dynamic_input = NodePath("../GUI/DynamicInput")
+btn_ortho = NodePath("../GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer/CheckOrtho")
+layer_manager = NodePath("../LayerManager")
+
+[node name="Background" type="CanvasLayer" parent="World" unique_id=2026382856]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="World/Background" unique_id=394266512]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12941177, 0.12941177, 0.12941177, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="GridSystem" type="Node2D" parent="World" unique_id=40385333]
+script = ExtResource("3_3tgeq")
+
+[node name="Entities" type="Node2D" parent="World" unique_id=1195883405]
+
+[node name="Preview" type="Node2D" parent="World" unique_id=1683739256]
+
+[node name="Camera2D" type="Camera2D" parent="World" unique_id=1023086182]
+script = ExtResource("4_c4ay3")
+
+[node name="SnapMarker" type="Node2D" parent="World" unique_id=575645034]
+z_index = 1000
+script = ExtResource("5_aht7i")
+
+[node name="GUI" type="CanvasLayer" parent="." unique_id=244358423]
+
+[node name="Layout" type="Control" parent="GUI" unique_id=697126342]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="TopRibbon" type="Panel" parent="GUI/Layout" unique_id=1774145733]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 165.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/Layout/TopRibbon" unique_id=1324618268]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+rotation = -0.00039958127
+
+[node name="TabContainer" type="TabContainer" parent="GUI/Layout/TopRibbon/VBoxContainer" unique_id=1880025479]
+layout_mode = 2
+mouse_filter = 2
+current_tab = 0
+
+[node name="Dessin2D" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer" unique_id=1186508177]
+layout_mode = 2
+mouse_filter = 0
+metadata/_tab_index = 0
+
+[node name="Dessin" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=1259254866]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnPolyligne" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin" unique_id=1401984626]
+layout_mode = 2
+text = "Polyligne"
+icon = ExtResource("6_5jffn")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="BtnCercle" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin" unique_id=2102793932]
+layout_mode = 2
+text = "Cercle"
+icon = ExtResource("7_kpo4j")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="BtnArc" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin" unique_id=466214747]
+layout_mode = 2
+text = "Arc"
+icon = ExtResource("8_aht7i")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Modification" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=84179644]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="ModificationCol1" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification" unique_id=1403291602]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnDeplacer" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1" unique_id=976536517]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Déplacer"
+icon = ExtResource("8_4n42c")
+
+[node name="BtnRotation" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1" unique_id=1971237848]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Rotation"
+icon = ExtResource("9_c5snn")
+
+[node name="BtnEchelle" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1" unique_id=1555016523]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Echelle"
+icon = ExtResource("10_xvtyr")
+
+[node name="ModificationCol2" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification" unique_id=729185469]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnMirroir" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2" unique_id=863682691]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Miroir"
+icon = ExtResource("11_u7mjy")
+
+[node name="BtnDecaler" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2" unique_id=936178382]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Décaler"
+icon = ExtResource("12_4yxf6")
+
+[node name="BtnCopier" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2" unique_id=1542765735]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Copier"
+icon = ExtResource("14_4n42c")
+
+[node name="ModificationCol3" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification" unique_id=1450345346]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnReseau" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol3" unique_id=855889422]
+layout_mode = 2
+size_flags_vertical = 3
+disabled = true
+text = "Réseau"
+icon = ExtResource("15_4n42c")
+
+[node name="BtnConge" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol3" unique_id=102610759]
+layout_mode = 2
+size_flags_vertical = 3
+disabled = true
+text = "Congé"
+icon = ExtResource("12_4yxf6")
+
+[node name="BtnAjuster" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol3" unique_id=1381927042]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Ajuster"
+icon = ExtResource("14_kpo4j")
+
+[node name="ImportExport" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=1840034961]
+layout_mode = 2
+
+[node name="ImportExportCol1" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport" unique_id=1027623080]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnExport" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1" unique_id=94436024]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Export DXF"
+
+[node name="BtnImport" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1" unique_id=1067795542]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Import DXF"
+
+[node name="Calques" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=463170928]
+layout_mode = 2
+
+[node name="CalquesCol1" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques" unique_id=2053488037]
+layout_mode = 2
+
+[node name="BtnCalques" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol1" unique_id=1656655800]
+layout_mode = 2
+text = "Calques"
+icon = ExtResource("13_qta6b")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="CalquesCol2" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques" unique_id=1216930027]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2" unique_id=1606726854]
+layout_mode = 2
+
+[node name="BtnLayerQuick" type="MenuButton" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/HBoxContainer" unique_id=951780934]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Calques"
+item_count = 2
+popup/item_0/text = "test"
+popup/item_0/id = 0
+popup/item_1/text = "test"
+popup/item_1/id = 1
+script = ExtResource("14_x3rx7")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2" unique_id=2013379569]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/VBoxContainer" unique_id=236311420]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Button" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/VBoxContainer/HBoxContainer" unique_id=1961686980]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "V"
+
+[node name="Button2" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/VBoxContainer/HBoxContainer" unique_id=651821084]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "V"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/VBoxContainer" unique_id=1063493765]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Button" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/VBoxContainer/HBoxContainer2" unique_id=1491599701]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "V"
+
+[node name="Button2" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/VBoxContainer/HBoxContainer2" unique_id=1157497183]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "V"
+
+[node name="ProprietesLignes" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=1498231961]
+layout_mode = 2
+
+[node name="TypeLargeur" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes" unique_id=1693091028]
+layout_mode = 2
+
+[node name="LabelType" type="Label" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=877636003]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Type de la ligne :"
+
+[node name="BtnLinetype" type="OptionButton" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=362072443]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 3
+item_count = 1
+popup/item_0/text = "Continu"
+popup/item_0/id = 0
+
+[node name="LabelLargeur" type="Label" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=1549468944]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Largeur de la ligne :"
+
+[node name="BtnLineweight" type="OptionButton" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=1978356671]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Calcul Structure" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer" unique_id=1568424329]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Dessin" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure" unique_id=341302450]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnPolyligne2" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin" unique_id=499587141]
+layout_mode = 2
+text = "Barre droite"
+icon = ExtResource("6_5jffn")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="BtnArc2" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin" unique_id=1131445281]
+layout_mode = 2
+text = "Barre Arc"
+icon = ExtResource("8_aht7i")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Appuis" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure" unique_id=567749299]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnAppuiSimple" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis" unique_id=1911575768]
+layout_mode = 2
+text = "Appui simple"
+icon = ExtResource("19_c5snn")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="BtnArticulation" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis" unique_id=595499066]
+layout_mode = 2
+text = "Articulation"
+icon = ExtResource("21_u7mjy")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="BtnEncastrement" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis" unique_id=2045062139]
+layout_mode = 2
+text = "Encastrement"
+icon = ExtResource("22_4yxf6")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Forces" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure" unique_id=22480216]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnForcePonctuelle" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces" unique_id=846931133]
+layout_mode = 2
+text = "Force ponctuelle"
+icon = ExtResource("23_6heos")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="BtnForceLineique" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces" unique_id=448606244]
+layout_mode = 2
+text = "Force linéique"
+icon = ExtResource("24_vvnwx")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Calculs" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure" unique_id=1790869622]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="BtnCalcul" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Calculs" unique_id=640865690]
+layout_mode = 2
+text = "Calculer"
+icon = ExtResource("23_qta6b")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="BottomBar" type="PanelContainer" parent="GUI/Layout" unique_id=171349847]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar" unique_id=560420182]
+layout_mode = 2
+
+[node name="SpacerLeft" type="Control" parent="GUI/Layout/BottomBar/HBoxContainer" unique_id=1527802352]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft" unique_id=2010570703]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="FPSLabel" type="Label" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/HBoxContainer" unique_id=173932086]
+layout_mode = 2
+
+[node name="ConsolePanel" type="PanelContainer" parent="GUI/Layout/BottomBar/HBoxContainer" unique_id=683617089 node_paths=PackedStringArray("history_label", "input_line")]
+custom_minimum_size = Vector2(800, 75)
+layout_mode = 2
+script = ExtResource("15_6heos")
+history_label = NodePath("VBoxContainer/History")
+input_line = NodePath("VBoxContainer/CommandLine")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/ConsolePanel" unique_id=189330674]
+layout_mode = 2
+
+[node name="History" type="RichTextLabel" parent="GUI/Layout/BottomBar/HBoxContainer/ConsolePanel/VBoxContainer" unique_id=1854060946]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CommandLine" type="LineEdit" parent="GUI/Layout/BottomBar/HBoxContainer/ConsolePanel/VBoxContainer" unique_id=1811268302]
+layout_mode = 2
+placeholder_text = "Tapez une commande..."
+
+[node name="SpacerRight" type="Control" parent="GUI/Layout/BottomBar/HBoxContainer" unique_id=356227559]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SnapContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerRight" unique_id=169168496 node_paths=PackedStringArray("snap_marker")]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("16_vvnwx")
+snap_marker = NodePath("../../../../../../World/SnapMarker")
+
+[node name="BtnSnapSettings" type="MenuButton" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer" unique_id=1560065730]
+layout_mode = 2
+text = "▲"
+item_count = 4
+popup/item_0/text = "Extrémité"
+popup/item_0/checkable = 1
+popup/item_0/checked = true
+popup/item_0/id = 0
+popup/item_1/text = "Milieu"
+popup/item_1/checkable = 1
+popup/item_1/checked = true
+popup/item_1/id = 1
+popup/item_2/text = "Intersection"
+popup/item_2/checkable = 1
+popup/item_2/checked = true
+popup/item_2/id = 2
+popup/item_3/text = "Perpendiculaire"
+popup/item_3/checkable = 1
+popup/item_3/checked = true
+popup/item_3/id = 3
+
+[node name="CheckSnap" type="CheckBox" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer" unique_id=1103480401]
+layout_mode = 2
+tooltip_text = "Accrochages"
+button_pressed = true
+icon = ExtResource("17_btbly")
+
+[node name="CheckOrtho" type="CheckBox" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer" unique_id=1338164082]
+layout_mode = 2
+tooltip_text = "Mode ortho"
+icon = ExtResource("18_vs04g")
+
+[node name="ExportDialog" type="FileDialog" parent="GUI" unique_id=1918052127]
+oversampling_override = 1.0
+size = Vector2i(640, 400)
+access = 2
+filters = PackedStringArray("*.dxf")
+
+[node name="ImportDialog" type="FileDialog" parent="GUI" unique_id=1656865627]
+title = "Open a File"
+size = Vector2i(640, 400)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.dxf")
+
+[node name="DynamicInput" parent="GUI" unique_id=158034261 instance=ExtResource("19_6ehlx")]
+visible = false
+
+[node name="CADCursor" type="Node2D" parent="GUI" unique_id=985043176]
+script = ExtResource("20_utia5")
+
+[node name="LayerDialog" parent="GUI" unique_id=1844761423 instance=ExtResource("21_jyqft")]
+visible = false
+
+[node name="Properties" type="Window" parent="GUI" unique_id=1599268539]
+oversampling_override = 1.0
+position = Vector2i(0, 215)
+size = Vector2i(250, 350)
+min_size = Vector2i(250, 250)
+
+[node name="PropertiesPanel" parent="GUI/Properties" unique_id=1670316951 instance=ExtResource("22_c4ay3")]
+
+[node name="SelectionManager" type="Node2D" parent="." unique_id=139498773 node_paths=PackedStringArray("world", "cad_cursor", "snap_manager", "layer_manager", "camera")]
+script = ExtResource("21_f7hdo")
+world = NodePath("../World")
+cad_cursor = NodePath("../GUI/CADCursor")
+snap_manager = NodePath("../GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer")
+layer_manager = NodePath("../LayerManager")
+camera = NodePath("../World/Camera2D")
+
+[node name="LayerManager" type="Node" parent="." unique_id=1237547576]
+script = ExtResource("22_clvyn")
+
+[node name="LinetypeManager" type="Node" parent="." unique_id=2068555665]
+script = ExtResource("24_3tgeq")
+
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnPolyligne" to="." method="_on_polyligne_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnCercle" to="." method="_on_circle_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnArc" to="." method="_on_btn_arc_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1/BtnDeplacer" to="." method="_on_move_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1/BtnRotation" to="." method="_on_rotate_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1/BtnEchelle" to="." method="_on_scale_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2/BtnMirroir" to="." method="_on_mirror_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2/BtnCopier" to="." method="_on_copy_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1/BtnExport" to="." method="_on_export_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1/BtnImport" to="." method="_on_import_pressed"]
+[connection signal="item_selected" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur/BtnLinetype" to="." method="_on_linetype_selected"]
+[connection signal="item_selected" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur/BtnLineweight" to="." method="_on_lineweight_selected"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin/BtnPolyligne2" to="." method="_on_polyligne_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin/BtnArc2" to="." method="_on_btn_arc_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnAppuiSimple" to="." method="btn_support_simple"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnArticulation" to="." method="btn_support_articulation"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnEncastrement" to="." method="btn_support_encastrement"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces/BtnForcePonctuelle" to="." method="btn_force_ponctuelle"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Calculs/BtnCalcul" to="." method="_on_calculate_rdm_pressed"]
+[connection signal="file_selected" from="GUI/ExportDialog" to="." method="_on_export_dialog_file_selected"]
+[connection signal="file_selected" from="GUI/ImportDialog" to="." method="import_dxf"]
