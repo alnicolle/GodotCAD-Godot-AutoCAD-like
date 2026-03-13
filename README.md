@@ -6,6 +6,9 @@ A godot-based AutoCAD-like 2D drafting tool. Draw, edit, and save technical draw
 [![Godot 4](https://img.shields.io/badge/Godot-4.x-478CBF?style=for-the-badge&logo=godot-engine)](https://godotengine.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
+
+![Software overview:](interface.png)
+
 ---
 
 🎯 Goals
