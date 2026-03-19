@@ -275,87 +275,49 @@ static func _write_entity_r12(file: FileAccess, ent, layer_name):
 		file.store_line("6"); file.store_line(lt)
 		file.store_line("62"); file.store_line("256") # DuCalque
 		file.store_line("10"); file.store_line(_f(center.x))
-		file.store_line("20"); file.store_line(_f(-center.y))  # Inverser Y pour DXF
+		file.store_line("20"); file.store_line(_f(-center.y))  # Inverser Y pour DXF [cite: 25]
 		file.store_line("30"); file.store_line("0.0")
 		file.store_line("40"); file.store_line(_f(ent.arc_radius))
-		# DXF ARC angles: degrés, CCW autour de +Z.
-		# Comme on inverse Y (20 = -y), on doit inverser le signe des angles.
-		# Problème: (start,end) modulo 360 peut représenter l'arc ou son complément.
-		# Solution: forcer l'étendue CCW à correspondre à l'étendue CCW Godot.
-		var eps := 0.001
+
+		# 1. Récupération des angles Godot
 		var start_rad: float = ent.arc_start_angle
 		var end_rad: float = ent.arc_end_angle
-		var raw_span_rad: float = end_rad - start_rad
-		var span_deg = fposmod(rad_to_deg(raw_span_rad), 360.0)
-		# Cas limite: arc quasi complet => span proche de 0 (mod 360). On le traite comme ~360.
-		# (DXF ne permet pas 360 exact en ARC, mais on veut éviter de prendre le petit complément.)
-		if span_deg < 1.0 and abs(rad_to_deg(raw_span_rad)) > 180.0:
-			span_deg = 360.0 - span_deg
-		# Point milieu (en CCW Godot) utilisé pour choisir entre les 2 candidats possibles.
-		var raw_span_ccw = fposmod(raw_span_rad, TAU)
-		var mid_rad = start_rad + raw_span_ccw * 0.5
-		var mid_deg = fposmod(rad_to_deg(-mid_rad), 360.0)
-		var _mid_in_ccw_interval = func(sdeg: float, edeg: float, mdeg: float) -> bool:
-			var total := fposmod(edeg - sdeg, 360.0)
-			var part := fposmod(mdeg - sdeg, 360.0)
-			return part <= total + eps
-		# Candidat A : mapping direct (start->end)
-		var start_deg_a = fposmod(rad_to_deg(-start_rad), 360.0)
-		var end_deg_a = fposmod(rad_to_deg(-end_rad), 360.0)
-		var ok_a: bool = _mid_in_ccw_interval.call(start_deg_a, end_deg_a, mid_deg)
-		# Candidat B : inverser (start/end)
-		var start_deg_b = end_deg_a
-		var end_deg_b = start_deg_a
-		var ok_b: bool = _mid_in_ccw_interval.call(start_deg_b, end_deg_b, mid_deg)
-		var start_deg: float
-		var end_deg: float
-		var did_swap := false
-		if ok_a and not ok_b:
-			start_deg = start_deg_a
-			end_deg = end_deg_a
-		elif ok_b and not ok_a:
-			start_deg = start_deg_b
-			end_deg = end_deg_b
-			did_swap = true
+		var delta_rad: float = end_rad - start_rad
+
+		# 2. Conversion basique pour AutoCAD (Inversion du signe de l'angle car Y est inversé) 
+		var dxf_start = fposmod(rad_to_deg(-start_rad), 360.0)
+		var dxf_end = fposmod(rad_to_deg(-end_rad), 360.0)
+
+		var final_start: float
+		var final_end: float
+
+		# 3. Choix des angles selon le sens de dessin original
+		if delta_rad > 0:
+			# Godot a tracé en CW (Y-down). 
+			# Pour tracer la même forme en CCW (AutoCAD), on inverse les bornes.
+			final_start = dxf_end
+			final_end = dxf_start
 		else:
-			# Cas dégénéré: midpoint pile sur un bord (ou incohérence). On prend celui qui matche le span attendu.
-			var span_a := fposmod(end_deg_a - start_deg_a, 360.0)
-			var span_b := fposmod(end_deg_b - start_deg_b, 360.0)
-			if abs(span_a - span_deg) <= abs(span_b - span_deg):
-				start_deg = start_deg_a
-				end_deg = end_deg_a
-			else:
-				start_deg = start_deg_b
-				end_deg = end_deg_b
-				did_swap = true
-		var dxf_span = fposmod(end_deg - start_deg, 360.0)
-		# Si l'étendue ne correspond pas à celle attendue, on reconstruit end = start + span.
-		var did_reconstruct := false
-		if abs(dxf_span - span_deg) > 0.5:
-			end_deg = fposmod(start_deg + span_deg, 360.0)
-			did_reconstruct = true
+			# Godot a tracé en CCW. 
+			# L'ordre originel correspond déjà à la norme AutoCAD.
+			final_start = dxf_start
+			final_end = dxf_end
+
+		# 4. Sécurité pour les arcs quasi-complets (DXF rejette Start == End)
+		var dxf_span = fposmod(final_end - final_start, 360.0)
+		if dxf_span < 0.5 and abs(rad_to_deg(delta_rad)) > 180.0:
+			final_end = fposmod(final_start + 359.99, 360.0)
 
 		if DEBUG_DXF_ARC:
-			# Point milieu (en CCW Godot) pour identifier le quadrant géométrique
-			var mid_local = ent.arc_center + Vector2(cos(mid_rad), sin(mid_rad)) * ent.arc_radius
-			var mid_world = ent.position + mid_local
-			var rel = mid_world - (ent.position + ent.arc_center)
 			print("[DXF ARC] layer=", layer_name,
-				" center=", (ent.position + ent.arc_center),
-				" r=", ent.arc_radius,
+				" center=", center,
 				" start_rad=", start_rad,
 				" end_rad=", end_rad,
-				" raw_span_deg=", rad_to_deg(raw_span_rad),
-				" span_deg=", span_deg,
-				" mid_deg=", mid_deg,
-				" start_deg=", start_deg,
-				" end_deg=", end_deg,
-				" dxf_span=", dxf_span,
-				" swap=", did_swap,
-				" reconstruct=", did_reconstruct,
-				" mid_rel=", rel)
-		file.store_line("50"); file.store_line(_f(start_deg))
-		file.store_line("51"); file.store_line(_f(end_deg))
+				" dxf_start=", final_start,
+				" dxf_end=", final_end)
+
+		file.store_line("50"); file.store_line(_f(final_start))
+		file.store_line("51"); file.store_line(_f(final_end))
 	else:
 		if ent.get_point_count() < 2: return
 		
