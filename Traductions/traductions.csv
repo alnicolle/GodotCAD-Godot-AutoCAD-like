@@ -1,0 +1,123 @@
+﻿id;fr;en
+UI_2DD;Dessin 2D;2D Drawing
+UI_RDM;Calcul Structure;Structural Analysis
+UI_2DD_POLYLINE;Polyligne;Polyline
+UI_2DD_CIRCLE;Cercle;Circle
+UI_2DD_ARC;Arc;Arc
+UI_2DD_MOVE;Déplacer;Move
+UI_2DD_ROTATE;Rotation;Rotate
+UI_2DD_SCALE;Echelle;Scale
+UI_2DD_MIRROR;Miroir;Mirror
+UI_2DD_OFFSET;Décaler;Offset
+UI_2DD_COPY;Copier;Copy
+UI_2DD_ARRAY;Réseau;Array
+UI_2DD_FILLET;Congé;Fillet
+UI_2DD_TRIM;Ajuster;Trim
+UI_2DD_DXF_EXPORT;Export DXF;Export DXF
+UI_2DD_DXF_IMPORT;Import DXF;Import DXF
+UI_2DD_LAYER;Calques;Layers
+UI_2DD_LINETYPE;Type de la ligne;Linetype
+UI_2DD_LINEWEIGHT;Largeur de la ligne;Lineweight
+UI_RDM_STRAIGHT_BEAM;Barre droite;Straight beam
+UI_RDM_CURVED_BEAM;Barre Arc;Curved beam
+UI_RDM_SIMPLE_SUPPORT;Appui simple;Simple support
+UI_RDM_HINGE;Articulation;Hinge
+UI_RDM_FIXED_SUPPORT;Encatrement;Fixed support
+UI_RDM_POINT_LOAD;Force ponctuelle;Point load
+UI_RDM_DISTRIBUTED_LOAD;Force linéique;Distributed load
+UI_RDM_CALCULATE;Calculer;Calculate
+UI_PROP_HEADER;PROPRIÉTÉS;PROPERTIES
+UI_PROP_GENERAL;--- GÉNÉRAL ---;--- GENERAL ---
+UI_PROP_LAYER;Calque :;Layer:
+UI_PROP_COLOR;Couleur :;Color:
+UI_PROP_LINETYPE;Type de ligne;Linetype:
+UI_PROP_LINEWEIGHT;Epaisseur;Lineweight:
+UI_PROP_SCALE;Ech. Ligne;Linetype Scale:
+UI_PROP_GEOMETRY;--- GÉOMÉTRIE ---;--- GEOMETRY ---
+UI_PROP_CENTER_X;Centre X :;Center X:
+UI_PROP_CENTER_Y;Centre Y :;Center Y:
+UI_PROP_RADIUS;Rayon :;Radius:
+MSG_CONSOLE_ARC_1;Les points sont colinéaires, impossible de créer un arc;"The points are collinear; cannot create an arc."
+MSG_CONSOLE_POINT_1;POINT : Spécifiez l'emplacement du point.;POINT: Specify the point location.
+MSG_CONSOLE_TRIM_1;AJUSTER (TRIM/FENCE) : Cliquez pour définir le premier point de la ligne de coupe virtuelle.;TRIM: Click to set the first point of the cutting edge.
+MSG_CONSOLE_TRIM_2;Coupé X objets.;Trimmed X object(s).
+MSG_CONSOLE_TRIM_3;Rien à couper.;Nothing to trim.
+MSG_CONSOLE_TRIM_4;AJUSTER : Déplacez le curseur et cliquez pour définir le second point de la ligne de coupe.;TRIM: Move the cursor and click to set the second point of the cutting edge.
+MSG_CONSOLE_SCALE_1;ECHELLE : Spécifiez le point de base;SCALE: Specify the base point.
+MSG_CONSOLE_SCALE_2;ECHELLE : Sélectionnez les objets et appuyez sur ENTRÉE;SCALE: Select objects and press ENTER.
+MSG_CONSOLE_SCALE_3;Le facteur d'échelle doit être > 0.;Scale factor must be > 0.
+MSG_CONSOLE_SCALE_4;Échelle facteur X appliquée.;Scale factor X applied.
+MSG_CONSOLE_MIRROR_1;MIROIR : Spécifiez le premier point de l'axe de symétrie;MIRROR: Specify the first point of the mirror line.
+MSG_CONSOLE_MIRROR_2;MIROIR : Sélectionnez les objets et appuyez sur ENTRÉE;MIRROR: Select objects and press ENTER.
+MSG_CONSOLE_MIRROR_3;Second point de l'axe :;Second point of the axis
+MSG_CONSOLE_MIRROR_4;Effacer source ? [O]ui / [N]on :;Erase source? [Y]es / [N]o
+MSG_CONSOLE_MIRROR_5;Miroir effectué (Source effacée).;Mirror completed (Source erased).
+MSG_CONSOLE_MIRROR_6;Miroir effectué (Source conservée).;Mirror completed (Source retained).
+MSG_CONSOLE_GENERAL_1;Commande terminée.;Command completed.
+MSG_CONSOLE_GENERAL_2;La distance doit être > 0. Réessayez :;Distance must be > 0. Try again.
+MSG_CONSOLE_GENERAL_3;Valeur ignorée ici.;Value ignored here.
+MSG_CONSOLE_GENERAL_4;Option : [F]acteur ou [R]éférence ?;Option: [S]cale factor or [R]eference?
+MSG_CONSOLE_GENERAL_5;Option : [A]ngle ou [R]éférence ?;Option: [A]ngle or [R]eference?
+MSG_CONSOLE_GENERAL_6;Entrez le facteur d'échelle :;Enter scale factor:
+MSG_CONSOLE_GENERAL_7;Spécifiez l'angle (Visuel ou Clavier) :;Specify angle (Visual or Keyboard):
+MSG_CONSOLE_COPY_1;Copié ;Copied 
+MSG_CONSOLE_COPY_3; objets.; object(s).
+MSG_CONSOLE_COPY_2;Rien à copier.;Nothing to copy.
+MSG_CONSOLE_PASTE_1;COLLER : Spécifiez le point d'insertion;PASTE: Specify insertion point.
+MSG_CONSOLE_ROTATE_1;ROTATION : Spécifiez le point de base (Pivot);ROTATE: Specify base point (Pivot).
+MSG_CONSOLE_ROTATE_2;ROTATION : Sélectionnez les objets et appuyez sur ENTRÉE;ROTATE: Select objects and press ENTER.
+MSG_CONSOLE_ROTATE_3;Rotation effectuée;Rotation completed
+MSG_CONSOLE_REFERENCE_1;RÉFÉRENCE : Premier point (Base);REFERENCE: First point (Base).
+MSG_CONSOLE_REFERENCE_2;RÉFÉRENCE : Choisissez le Pivot;REFERENCE: Choose the pivot.
+MSG_CONSOLE_REFERENCE_3;RÉFÉRENCE : Second point (Longueur référence);REFERENCE: Second point (Reference length).
+MSG_CONSOLE_REFERENCE_4;RÉFÉRENCE : Point Départ Angle;REFERENCE: Start point for angle.
+MSG_CONSOLE_REFERENCE_5;RÉFÉRENCE : Point Arrivée Angle;REFERENCE: End point for angle
+MSG_CONSOLE_REFERENCE_6;RÉFÉRENCE : Troisième point (Nouvelle longueur);REFERENCE: Third point (New length)
+MSG_CONSOLE_OSNAP_1;Accrochage activé;Osnap enabled.
+MSG_CONSOLE_OSNAP_2;Accrochage désactivé;Osnap disabled.
+MSG_CONSOLE_OSNAP_3;Extrémité;Endpoint
+MSG_CONSOLE_OSNAP_4;Milieu;Midpoint
+MSG_CONSOLE_OSNAP_5;Centre;Center
+MSG_CONSOLE_OSNAP_6;Intersection;Intersection
+MSG_CONSOLE_OSNAP_7;Perpendiculaire;Perpendicular
+MSG_CONSOLE_ORTHO_1;Mode Ortho ;Ortho Mode 
+MSG_CONSOLE_ORTHO_2;activé;enabled
+MSG_CONSOLE_ORTHO_3;désactivé;disabled
+MSG_LINETYPE_MANAGER_1;LinetypeManager : X types chargés.;Linetype Manager: X types loaded
+MSG_CONSOLE_MOVE_1;Déplacement enregistré.;Displacement recorded.
+MSG_CONSOLE_SELECTION_1; objet(s) sélectionné(s).; object(s) selected.
+MSG_CONSOLE_SELECTION_2; objet(s) supprimé(s).; object(s) deleted.
+MSG_CONSOLE_SELECTION_3;Sélection vide.;Empty selection.
+MSG_CONSOLE_GRIP_1;Annulation.;Cancelled.
+MSG_CONSOLE_GRIP_2;Position validée;Position confirmed
+MSG_CONSOLE_GRIP_3;Modification géométrie…;Modifying geometry…
+MSG_CONSOLE_OFFSET_1;DECALER : Objet pré-sélectionné pris en compte.;OFFSET: Preselected object taken into account.
+MSG_CONSOLE_OFFSET_2;Fonction principale : 3 points vers Arc;Main function: 3 points to Arc.
+MSG_CONSOLE_OFFSET_3;DECALER : Sélection multiple ignorée (Veuillez choisir un seul objet).;OFFSET: Multiple selection ignored (Please select a single object).
+MSG_CONSOLE_OFFSET_4;DECALER : Cliquez pour valider le côté;OFFSET: Click to specify the side.
+MSG_CONSOLE_OFFSET_5;DECALER : Sélectionnez l'objet à décaler;OFFSET: Select object to offset.
+MSG_CONSOLE_OFFSET_6;Distance ;Distance 
+MSG_CONSOLE_OFFSET_7; validée; confirmed
+MSG_CONSOLE_OFFSET_8;DECALER : Entrez la distance :;OFFSET: Enter the distance
+MSG_CONSOLE_OFFSET_9;DECALER (Visuel) : Cliquez pour valider;OFFSET (Visual): Click to confirm
+MSG_CONSOLE_OFFSET_10;Rien sous la souris.;Nothing under cursor.
+MSG_CONSOLE_OFFSET_11;Objet décalé créé.;Offset object created.
+MSG_CONSOLE_OFFSET_12;DECALER : [D]istance (;OFFSET: [D]istance (
+MSG_CONSOLE_OFFSET_13;) ou [V]isuel ? (ENTRÉE pour valider ;) or [V]isual? (Press ENTER to confirm
+MSG_CONSOLE_OFFSET_14;DECALER (Visuel) : Sélectionnez l'objet;OFFSET (Visual): Select object.
+MSG_CONSOLE_TRANSFORM_1;Spécifiez le point de base;Specify the base point
+MSG_CONSOLE_TRANSFORM_2;Sélectionnez les objets et appuyez sur ENTRÉE;Select objects and press ENTER
+MSG_CONSOLE_TRANSFORM_3;Second point :;Second point:
+MSG_CONSOLE_TRANSFORM_4;Point de base :;Base point
+MSG_CONSOLE_TRANSFORM_5;Point de base (Pivot) :;Base point (Pivot)
+MSG_CONSOLE_TRANSFORM_6;Premier point de l'axe :;First point of the axis
+MSG_RDM_LOAD_1;RDM: cliquez pour définir le début de la force répartie;RDM: Click to define the start of the distributed load.
+MSG_RDM_SUPPORT_1;RDM: cliquez pour placer un appui X;RDM: Click to place support X.
+MSG_RDM_GENERAL_1;RDM: création annulée;RDM: Creation canceled.
+MSG_RDM_LOAD_2;RDM: cliquez pour définir la fin de la force répartie;RDM: Click to define the end of the distributed load.
+MSG_RDM_SUPPORT_2;Support X créé à X;Support X created at X.
+MSG_RDM_FORCE_1;Force X N, moment X N·m créé à X;Force X N, moment X N·m created at X.
+MSG_RDM_FORCE_2;Force répartie X N/m créée de X à X;Distributed load X N/m created from X to X.
+MSG_RDM_STRUCTURE_1;Structure de test RDM créée;RDM test structure created.
+MSG_RDM_CALCULATION_1;Calcul RDM terminé en X secondes;RDM calculation completed in X seconds.
+MSG_RDM_ERROR_1;Erreur calcul RDM: X;RDM calculation error: X.

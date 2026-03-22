@@ -41,7 +41,6 @@ var guide_screen_offset = 60.0
 var is_circle = false
 var circle_center = Vector2.ZERO
 var circle_radius = 0.0
-var circle_visual_target = Vector2.ZERO
 
 # --- DONNÉES ARC ---
 var is_arc = false
@@ -57,9 +56,6 @@ var point_style = "CROSS"  # "CROSS", "CIRCLE", "SQUARE"
 
 func _ready():
 	default_color_val = default_color
-	
-	if is_circle and circle_visual_target == Vector2.ZERO:
-		circle_visual_target = circle_center + Vector2(circle_radius, 0)
 	
 	if not is_circle and not is_arc:
 		texture_mode = Line2D.LINE_TEXTURE_STRETCH
@@ -434,10 +430,7 @@ func draw_guide_visuals(current_zoom: float):
 	
 	if is_circle:
 		start_pos = to_local(circle_center)
-		if circle_visual_target != Vector2.ZERO and circle_visual_target != circle_center:
-			end_pos = to_local(circle_visual_target)
-		else:
-			end_pos = start_pos + Vector2(circle_radius, 0)
+		end_pos = start_pos + Vector2(circle_radius, 0)
 	else:
 		if points.size() < 2: return
 		start_pos = points[points.size() - 2]
@@ -597,11 +590,9 @@ func move_point(index: int, new_global_pos: Vector2):
 func translate_entity(offset: Vector2):
 	if is_circle:
 		circle_center += offset
-		if circle_visual_target != Vector2.ZERO: circle_visual_target += offset
 	elif is_arc:
 		arc_center += offset
 		update_arc_properties(arc_center, arc_radius, arc_start_angle, arc_end_angle)
-		return
 	elif is_point:
 		# Pour les points, déplacer la position globale
 		global_position += offset

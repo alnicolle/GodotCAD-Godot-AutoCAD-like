@@ -36,6 +36,7 @@
 [ext_resource type="Script" uid="uid://c2vpvhrnqeaun" path="res://Scripts/LinetypeManager.gd" id="24_3tgeq"]
 [ext_resource type="Texture2D" uid="uid://by0hulcbtcp8f" path="res://Ressources/force_repartie.png" id="24_vvnwx"]
 [ext_resource type="Script" uid="uid://b7oax6vph0j56" path="res://Scripts/CursorManager.gd" id="25_cursor_mgr"]
+[ext_resource type="Script" uid="uid://pcptuvpx0jvg" path="res://Modules/RDM/RDMController.gd" id="37_vvnwx"]
 
 [node name="Main" type="Node2D" unique_id=242557343 node_paths=PackedStringArray("world", "gui", "export_dialog", "import_dialog", "btn_import", "console", "top_ribbon", "bottom_bar", "btn_move", "btn_copy", "btn_mirror", "btn_rotate", "btn_scale", "btn_offset", "btn_trim", "btn_linetype", "btn_lineweight", "btn_arc", "btn_support_simple", "btn_support_articulation", "btn_support_encastrement", "btn_force_ponctuelle", "btn_force_distributed", "properties_panel", "window_properties", "fps_label", "btn_manage_layers", "cad_cursor", "snap_manager", "selection_manager", "drawing_manager", "layer_manager")]
 script = ExtResource("1_hwpts")
@@ -137,11 +138,14 @@ rotation = -0.00039958127
 layout_mode = 2
 mouse_filter = 2
 current_tab = 0
+tab_0/title = "UI_2DD"
+tab_1/title = "UI_RDM"
 
 [node name="Dessin2D" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer" unique_id=1186508177]
 layout_mode = 2
 mouse_filter = 0
 metadata/_tab_index = 0
+metadata/_tab_name = "UI_2DD"
 
 [node name="Dessin" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=1259254866]
 layout_mode = 2
@@ -149,21 +153,21 @@ mouse_filter = 0
 
 [node name="BtnPolyligne" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin" unique_id=1401984626]
 layout_mode = 2
-text = "Polyligne"
+text = "UI_2DD_POLYLINE"
 icon = ExtResource("6_5jffn")
 icon_alignment = 1
 vertical_icon_alignment = 0
 
 [node name="BtnCercle" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin" unique_id=2102793932]
 layout_mode = 2
-text = "Cercle"
+text = "UI_2DD_CIRCLE"
 icon = ExtResource("7_kpo4j")
 icon_alignment = 1
 vertical_icon_alignment = 0
 
 [node name="BtnArc" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin" unique_id=466214747]
 layout_mode = 2
-text = "Arc"
+text = "UI_2DD_ARC"
 icon = ExtResource("8_aht7i")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -179,19 +183,19 @@ mouse_filter = 0
 [node name="BtnDeplacer" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1" unique_id=976536517]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Déplacer"
+text = "UI_2DD_MOVE"
 icon = ExtResource("8_4n42c")
 
 [node name="BtnRotation" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1" unique_id=1971237848]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Rotation"
+text = "UI_2DD_ROTATE"
 icon = ExtResource("9_c5snn")
 
 [node name="BtnEchelle" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1" unique_id=1555016523]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Echelle"
+text = "UI_2DD_SCALE"
 icon = ExtResource("10_xvtyr")
 
 [node name="ModificationCol2" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification" unique_id=729185469]
@@ -201,19 +205,19 @@ mouse_filter = 0
 [node name="BtnMirroir" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2" unique_id=863682691]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Miroir"
+text = "UI_2DD_MIRROR"
 icon = ExtResource("11_u7mjy")
 
 [node name="BtnDecaler" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2" unique_id=936178382]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Décaler"
+text = "UI_2DD_OFFSET"
 icon = ExtResource("12_4yxf6")
 
 [node name="BtnCopier" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2" unique_id=1542765735]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Copier"
+text = "UI_2DD_COPY"
 icon = ExtResource("14_4n42c")
 
 [node name="ModificationCol3" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification" unique_id=1450345346]
@@ -224,20 +228,20 @@ mouse_filter = 0
 layout_mode = 2
 size_flags_vertical = 3
 disabled = true
-text = "Réseau"
+text = "UI_2DD_ARRAY"
 icon = ExtResource("15_4n42c")
 
 [node name="BtnConge" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol3" unique_id=102610759]
 layout_mode = 2
 size_flags_vertical = 3
 disabled = true
-text = "Congé"
+text = "UI_2DD_FILLET"
 icon = ExtResource("12_4yxf6")
 
 [node name="BtnAjuster" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol3" unique_id=1381927042]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Ajuster"
+text = "UI_2DD_TRIM"
 icon = ExtResource("14_kpo4j")
 
 [node name="ImportExport" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=1840034961]
@@ -250,12 +254,12 @@ mouse_filter = 0
 [node name="BtnExport" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1" unique_id=94436024]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Export DXF"
+text = "UI_2DD_DXF_EXPORT"
 
 [node name="BtnImport" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1" unique_id=1067795542]
 layout_mode = 2
 size_flags_vertical = 3
-text = "Import DXF"
+text = "UI_2DD_DXF_IMPORT"
 
 [node name="Calques" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=463170928]
 layout_mode = 2
@@ -265,7 +269,7 @@ layout_mode = 2
 
 [node name="BtnCalques" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol1" unique_id=1656655800]
 layout_mode = 2
-text = "Calques"
+text = "UI_2DD_LAYER"
 icon = ExtResource("13_qta6b")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -332,7 +336,7 @@ layout_mode = 2
 [node name="LabelType" type="Label" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=877636003]
 layout_mode = 2
 size_flags_vertical = 6
-text = "Type de la ligne :"
+text = "UI_2DD_LINETYPE"
 
 [node name="BtnLinetype" type="OptionButton" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=362072443]
 custom_minimum_size = Vector2(300, 0)
@@ -345,7 +349,7 @@ popup/item_0/id = 0
 [node name="LabelLargeur" type="Label" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=1549468944]
 layout_mode = 2
 size_flags_vertical = 6
-text = "Largeur de la ligne :"
+text = "UI_2DD_LINEWEIGHT"
 
 [node name="BtnLineweight" type="OptionButton" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur" unique_id=1978356671]
 layout_mode = 2
@@ -355,6 +359,7 @@ size_flags_vertical = 3
 visible = false
 layout_mode = 2
 metadata/_tab_index = 1
+metadata/_tab_name = "UI_RDM"
 
 [node name="Dessin" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure" unique_id=341302450]
 layout_mode = 2
@@ -362,14 +367,14 @@ mouse_filter = 0
 
 [node name="BtnPolyligne2" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin" unique_id=499587141]
 layout_mode = 2
-text = "Barre droite"
+text = "UI_RDM_STRAIGHT_BEAM"
 icon = ExtResource("6_5jffn")
 icon_alignment = 1
 vertical_icon_alignment = 0
 
 [node name="BtnArc2" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin" unique_id=1131445281]
 layout_mode = 2
-text = "Barre Arc"
+text = "UI_RDM_CURVED_BEAM"
 icon = ExtResource("8_aht7i")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -380,21 +385,21 @@ mouse_filter = 0
 
 [node name="BtnAppuiSimple" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis" unique_id=1911575768]
 layout_mode = 2
-text = "Appui simple"
+text = "UI_RDM_SIMPLE_SUPPORT"
 icon = ExtResource("19_c5snn")
 icon_alignment = 1
 vertical_icon_alignment = 0
 
 [node name="BtnArticulation" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis" unique_id=595499066]
 layout_mode = 2
-text = "Articulation"
+text = "UI_RDM_HINGE"
 icon = ExtResource("21_u7mjy")
 icon_alignment = 1
 vertical_icon_alignment = 0
 
 [node name="BtnEncastrement" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis" unique_id=2045062139]
 layout_mode = 2
-text = "Encastrement"
+text = "UI_RDM_FIXED_SUPPORT"
 icon = ExtResource("22_4yxf6")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -405,14 +410,14 @@ mouse_filter = 0
 
 [node name="BtnForcePonctuelle" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces" unique_id=846931133]
 layout_mode = 2
-text = "Force ponctuelle"
+text = "UI_RDM_POINT_LOAD"
 icon = ExtResource("23_6heos")
 icon_alignment = 1
 vertical_icon_alignment = 0
 
 [node name="BtnForceLineique" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces" unique_id=448606244]
 layout_mode = 2
-text = "Force linéique"
+text = "UI_RDM_DISTRIBUTED_LOAD"
 icon = ExtResource("24_vvnwx")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -423,7 +428,7 @@ mouse_filter = 0
 
 [node name="BtnCalcul" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Calculs" unique_id=640865690]
 layout_mode = 2
-text = "Calculer"
+text = "UI_RDM_CALCULATE"
 icon = ExtResource("23_qta6b")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -537,7 +542,7 @@ visible = false
 
 [node name="Properties" type="Window" parent="GUI" unique_id=1599268539]
 oversampling_override = 1.0
-position = Vector2i(0, 215)
+position = Vector2i(0, 250)
 size = Vector2i(250, 350)
 min_size = Vector2i(250, 250)
 
@@ -556,6 +561,10 @@ script = ExtResource("22_clvyn")
 
 [node name="LinetypeManager" type="Node" parent="." unique_id=2068555665]
 script = ExtResource("24_3tgeq")
+
+[node name="RDMController" type="Node" parent="." unique_id=1753493723]
+script = ExtResource("37_vvnwx")
+metadata/_custom_type_script = "uid://pcptuvpx0jvg"
 
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnPolyligne" to="." method="_on_polyligne_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnCercle" to="." method="_on_circle_pressed"]

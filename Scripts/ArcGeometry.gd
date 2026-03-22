@@ -28,7 +28,7 @@ class ArcInfo:
 static func three_points_to_arc(p1: Vector2, p2: Vector2, p3: Vector2) -> ArcInfo:
 	# Vérifier si les points sont colinéaires
 	if _are_points_collinear(p1, p2, p3):
-		GlobalLogger.warning("Les points sont colinéaires, impossible de créer un arc")
+		#GlobalLogger.warning(tr("MSG_CONSOLE_ARC_1"))
 		return null
 	
 	# Calculer le centre du cercle passant par les 3 points

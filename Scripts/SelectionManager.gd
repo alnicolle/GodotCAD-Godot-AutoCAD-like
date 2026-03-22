@@ -128,15 +128,15 @@ func start_offset_command():
 	if count == 1:
 		var entities = get_selected_entities_list()
 		offset_target_entity = entities[0]
-		GlobalLogger.info("DECALER : Objet pré-sélectionné pris en compte.")
+		GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_1"))
 	elif count > 1:
-		GlobalLogger.info("DECALER : Sélection multiple ignorée (Veuillez choisir un seul objet).")
+		GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_3"))
 	
 	# Étape 1 : Choix du mode
 	move_step = 1
 	
 	# --- MODIFICATION ICI : AFFICHER LA VALEUR SAUVEGARDÉE ---
-	GlobalLogger.info("DECALER : [D]istance (" + str(offset_dist) + ") ou [V]isuel ? (ENTRÉE pour valider " + str(offset_dist) + ")")
+	GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_12") + str(offset_dist) + tr("MSG_CONSOLE_OFFSET_13") + str(offset_dist) + ")")
 	# ---------------------------------------------------------
 	
 	if cad_cursor: 
@@ -154,7 +154,7 @@ func start_point_command():
 	move_initial_data.clear()
 	_clear_ghosts()
 	
-	GlobalLogger.info("POINT : Spécifiez l'emplacement du point.")
+	GlobalLogger.info(tr("MSG_CONSOLE_POINT_1"))
 	
 	if cad_cursor:
 		cad_cursor.show_crosshair = true
@@ -174,7 +174,7 @@ func start_trim_command():
 	trim_fence_end = Vector2.ZERO
 	trim_objects.clear()
 	
-	GlobalLogger.info("AJUSTER (TRIM/FENCE) : Cliquez pour définir le premier point de la ligne de coupe virtuelle.")
+	GlobalLogger.info(tr("MSG_CONSOLE_TRIM_1"))
 	
 	if cad_cursor:
 		cad_cursor.show_crosshair = true
@@ -189,11 +189,11 @@ func start_scale_command():
 	var selected_count = count_selected()
 	if selected_count > 0:
 		move_step = 1
-		GlobalLogger.info("ECHELLE : Spécifiez le point de base")
+		GlobalLogger.info(tr("MSG_CONSOLE_SCALE_1"))
 		if cad_cursor: cad_cursor.show_crosshair = true
 	else:
 		move_step = 0
-		GlobalLogger.info("ECHELLE : Sélectionnez les objets et appuyez sur ENTRÉE")
+		GlobalLogger.info(tr("MSG_CONSOLE_SCALE_2"))
 		if cad_cursor: 
 			cad_cursor.show_crosshair = false
 			cad_cursor.queue_redraw()
@@ -224,12 +224,12 @@ func _start_generic_transform_command(type, label: String):
 	if selected_count > 0:
 		# Cas : Objets déjà sélectionnés -> On passe direct au point de base
 		move_step = 1
-		GlobalLogger.info(label + " : Spécifiez le point de base")
+		GlobalLogger.info(label + " : " + tr("MSG_CONSOLE_TRANSFORM_1"))
 		if cad_cursor: cad_cursor.show_crosshair = true
 	else:
 		# Cas : Pas de sélection -> On demande la sélection
 		move_step = 0
-		GlobalLogger.info(label + " : Sélectionnez les objets et appuyez sur ENTRÉE")
+		GlobalLogger.info(label + " : " + tr("MSG_CONSOLE_TRANSFORM_2"))
 		if cad_cursor: 
 			cad_cursor.show_crosshair = false
 			cad_cursor.queue_redraw()
@@ -242,11 +242,11 @@ func start_mirror_command():
 	var selected_count = count_selected()
 	if selected_count > 0:
 		move_step = 1 # On passe direct au premier point de l'axe
-		GlobalLogger.info("MIROIR : Spécifiez le premier point de l'axe de symétrie")
+		GlobalLogger.info(tr("MSG_CONSOLE_MIRROR_1"))
 		if cad_cursor: cad_cursor.show_crosshair = true
 	else:
 		move_step = 0 # Selection d'abord
-		GlobalLogger.info("MIROIR : Sélectionnez les objets et appuyez sur ENTRÉE")
+		GlobalLogger.info(tr("MSG_CONSOLE_MIRROR_2"))
 		if cad_cursor: 
 			cad_cursor.show_crosshair = false # Carré de sélection uniquement
 			cad_cursor.queue_redraw()
@@ -277,7 +277,7 @@ func cancel_command():
 		snap_manager.reset_visuals()
 
 	queue_redraw()
-	GlobalLogger.info("Commande terminée.")
+	GlobalLogger.info(tr("MSG_CONSOLE_GENERAL_1"))
 
 # --- GESTION DU PRESSE-PAPIER (CTRL+C / CTRL+V) ---
 func copy_to_clipboard():
@@ -302,9 +302,9 @@ func copy_to_clipboard():
 			count += 1
 			
 	if count > 0:
-		GlobalLogger.info("Copié " + str(count) + " objets.")
+		GlobalLogger.info(tr("MSG_CONSOLE_COPY_1") + str(count))
 	else:
-		GlobalLogger.warning("Rien à copier.")
+		GlobalLogger.warning(tr("MSG_CONSOLE_COPY_2"))
 
 func start_paste_command():
 	# SUPPRIMEZ la ligne : _prepare_paste_data() qui est ici
@@ -317,7 +317,7 @@ func start_paste_command():
 	current_command = CommandType.PASTE
 	move_step = 2
 	
-	GlobalLogger.info("COLLER : Spécifiez le point d'insertion")
+	GlobalLogger.info(tr("MSG_CONSOLE_PASTE_1"))
 	
 	# 1. Calcul du centre
 	var center = _calculate_clipboard_center()
@@ -363,10 +363,10 @@ func cut_to_clipboard():
 		if snap_manager: snap_manager.reset_visuals()
 		if cad_cursor: cad_cursor.modulate = Color.WHITE
 		
-		GlobalLogger.info("Coupé " + str(count) + " objets.")
+		GlobalLogger.info(tr("MSG_CONSOLE_TRIM_2") + str(count))
 		emit_signal("selection_changed", [])
 	else:
-		GlobalLogger.warning("Rien à couper.")
+		GlobalLogger.warning(tr("MSG_CONSOLE_TRIM_3"))
 
 #Rotation
 func start_rotate_command():
@@ -376,11 +376,11 @@ func start_rotate_command():
 	var selected_count = count_selected()
 	if selected_count > 0:
 		move_step = 1
-		GlobalLogger.info("ROTATION : Spécifiez le point de base (Pivot)")
+		GlobalLogger.info(tr("MSG_CONSOLE_ROTATE_1"))
 		if cad_cursor: cad_cursor.show_crosshair = true
 	else:
 		move_step = 0
-		GlobalLogger.info("ROTATION : Sélectionnez les objets et appuyez sur ENTRÉE")
+		GlobalLogger.info(tr("MSG_CONSOLE_ROTATE_2"))
 		if cad_cursor: 
 			cad_cursor.show_crosshair = false
 			cad_cursor.queue_redraw()
@@ -398,19 +398,19 @@ func submit_input_value(value: float):
 	# ECHELLE (Uniquement à l'étape 6 "Facteur")
 	if current_command == CommandType.SCALE and move_step == 6:
 		if value <= 0.0001:
-			GlobalLogger.error("Le facteur d'échelle doit être > 0.")
+			GlobalLogger.error(tr("MSG_CONSOLE_SCALE_3"))
 			return
 		
 		apply_scale_to_selection(value)
 		cancel_command()
-		GlobalLogger.success("Échelle facteur " + str(value) + " appliquée.")
+		GlobalLogger.success(tr("MSG_CONSOLE_SCALE_4") + str(value))
 		return
 		
 	# CAS DECALER (Etape 1 : Saisie de la distance)
 	# CAS DECALER : Validation Distance
 	if current_command == CommandType.OFFSET and move_step == 11:
 		if value <= 0:
-			GlobalLogger.error("La distance doit être > 0. Réessayez :")
+			GlobalLogger.error(tr("MSG_CONSOLE_GENERAL_2"))
 			return
 		
 		offset_dist = value
@@ -421,19 +421,19 @@ func submit_input_value(value: float):
 			# OUI -> On saute la sélection, on prépare le fantôme et on passe à l'étape 3
 			_store_ghost_for_offset(offset_target_entity)
 			move_step = 3
-			GlobalLogger.info("DECALER : Cliquez pour valider le côté")
+			GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_4"))
 			# Curseur croix pour placer
 			if cad_cursor: cad_cursor.show_crosshair = true; cad_cursor.queue_redraw()
 		else:
 			# NON -> On demande de sélectionner
 			move_step = 2
-			GlobalLogger.info("DECALER : Sélectionnez l'objet à décaler")
+			GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_5"))
 			# Curseur Pickbox (Carré seul)
 			if cad_cursor: cad_cursor.show_crosshair = false; cad_cursor.queue_redraw()
 			
 		return
 
-	GlobalLogger.warning("Valeur ignorée ici.")
+	GlobalLogger.warning(tr("MSG_CONSOLE_GENERAL_3"))
 
 
 # --- INPUT HANDLING ---
@@ -517,7 +517,7 @@ func _unhandled_input(event):
 					trim_fence_start = _get_snap_pos(mouse_pos_world, [])
 					trim_fence_end = trim_fence_start
 					trim_step = 1
-					GlobalLogger.info("AJUSTER : Déplacez le curseur et cliquez pour définir le second point de la ligne de coupe.")
+					GlobalLogger.info(tr("MSG_CONSOLE_TRIM_4"))
 					get_viewport().set_input_as_handled()
 					queue_redraw()
 					return
@@ -559,17 +559,17 @@ func _unhandled_input(event):
 					get_viewport().gui_release_focus()
 					
 					offset_mode = "VALUE"
-					GlobalLogger.info("Distance " + str(offset_dist) + " validée.")
+					GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_6") + str(offset_dist) + tr("MSG_CONSOLE_OFFSET_7"))
 					
 					# LOGIQUE DE TRANSITION (Identique à celle de submit_input_value)
 					if offset_target_entity != null:
 						_store_ghost_for_offset(offset_target_entity)
 						move_step = 3
-						GlobalLogger.info("DECALER : Cliquez pour valider le côté")
+						GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_4"))
 						if cad_cursor: cad_cursor.show_crosshair = true; cad_cursor.queue_redraw()
 					else:
 						move_step = 2
-						GlobalLogger.info("DECALER : Sélectionnez l'objet à décaler")
+						GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_5"))
 						if cad_cursor: cad_cursor.show_crosshair = false; cad_cursor.queue_redraw()
 					
 					get_viewport().set_input_as_handled()
@@ -580,7 +580,7 @@ func _unhandled_input(event):
 					# OPTION DISTANCE
 					if event.keycode == KEY_D:
 						move_step = 11
-						GlobalLogger.info("DECALER : Entrez la distance :")
+						GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_8"))
 						get_viewport().set_input_as_handled()
 						return
 					
@@ -593,12 +593,12 @@ func _unhandled_input(event):
 							# Objet déjà là -> Step 3 direct
 							_store_ghost_for_offset(offset_target_entity)
 							move_step = 3
-							GlobalLogger.info("DECALER (Visuel) : Cliquez pour valider")
+							GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_9"))
 							if cad_cursor: cad_cursor.show_crosshair = true; cad_cursor.queue_redraw()
 						else:
 							# Pas d'objet -> Step 2
 							move_step = 2
-							GlobalLogger.info("DECALER (Visuel) : Sélectionnez l'objet")
+							GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_14"))
 							# Curseur Pickbox (Carré seul)
 							if cad_cursor: cad_cursor.show_crosshair = false; cad_cursor.queue_redraw()
 						
@@ -637,14 +637,14 @@ func _unhandled_input(event):
 						_store_ghost_for_offset(clicked_ent)
 						
 						move_step = 3
-						GlobalLogger.info("DECALER : Cliquez pour valider le côté")
+						GlobalLogger.info(tr("MSG_CONSOLE_OFFSET_4"))
 						
 						# On remet le curseur Crosshair pour l'étape de placement
 						if cad_cursor: 
 							cad_cursor.show_crosshair = true
 							cad_cursor.queue_redraw()
 					else:
-						GlobalLogger.warning("Rien sous la souris.")
+						GlobalLogger.warning(tr("MSG_CONSOLE_OFFSET_10"))
 					
 					get_viewport().set_input_as_handled()
 					return
@@ -705,10 +705,10 @@ func _unhandled_input(event):
 							cad_cursor.queue_redraw()
 						
 						# 4. Message contextuel
-						var msg = "Point de base :"
-						if current_command == CommandType.ROTATE: msg = "Point de base (Pivot) :"
-						elif current_command == CommandType.SCALE: msg = "Point de base (Pivot) :"
-						elif current_command == CommandType.MIRROR: msg = "Premier point de l'axe :"
+						var msg = tr("MSG_CONSOLE_TRANSFORM_4")
+						if current_command == CommandType.ROTATE: msg = tr("MSG_CONSOLE_TRANSFORM_5")
+						elif current_command == CommandType.SCALE: msg = tr("MSG_CONSOLE_TRANSFORM_5")
+						elif current_command == CommandType.MIRROR: msg = tr("MSG_CONSOLE_TRANSFORM_6")
 						
 						GlobalLogger.info(msg)
 						
@@ -744,26 +744,26 @@ func _unhandled_input(event):
 							scale_pivot = current_snap_pos
 							_store_initial_positions_for_preview()
 							move_step = 2
-							GlobalLogger.info("Option : [F]acteur ou [R]éférence ?")
+							GlobalLogger.info(tr("MSG_CONSOLE_GENERAL_4"))
 							
 						elif current_command == CommandType.ROTATE: 
 							rotation_pivot = current_snap_pos
 							_store_initial_positions_for_preview()
 							move_step = 2
-							GlobalLogger.info("Option : [A]ngle ou [R]éférence ?")
+							GlobalLogger.info(tr("MSG_CONSOLE_GENERAL_5"))
 							
 						elif current_command == CommandType.MIRROR:
 							mirror_p1 = current_snap_pos
 							_store_initial_positions_for_preview()
 							move_step = 2
-							GlobalLogger.info("Second point de l'axe :")
+							GlobalLogger.info(tr("MSG_CONSOLE_MIRROR_3"))
 							
 						else: # MOVE / COPY
 							move_base_point = current_snap_pos
 							if current_command == CommandType.MOVE: _store_initial_positions_for_preview()
 							elif current_command == CommandType.COPY: _store_preview_ghosts_for_copy()
 							move_step = 2
-							GlobalLogger.info("Second point :")
+							GlobalLogger.info(tr("MSG_CONSOLE_TRANSFORM_3"))
 						
 						get_viewport().set_input_as_handled()
 						return 
@@ -784,12 +784,12 @@ func _unhandled_input(event):
 						if event is InputEventKey and event.pressed:
 							if event.keycode == KEY_F:
 								move_step = 6
-								GlobalLogger.info("Entrez le facteur d'échelle :")
+								GlobalLogger.info(tr("MSG_CONSOLE_GENERAL_6"))
 								get_viewport().set_input_as_handled()
 								return
 							if event.keycode == KEY_R:
 								move_step = 3
-								GlobalLogger.info("RÉFÉRENCE : Premier point (Base)")
+								GlobalLogger.info(tr("MSG_CONSOLE_REFERENCE_1"))
 								get_viewport().set_input_as_handled()
 								return
 						
@@ -803,12 +803,12 @@ func _unhandled_input(event):
 						if event is InputEventKey and event.pressed:
 							if event.keycode == KEY_A:
 								move_step = 6
-								GlobalLogger.info("Spécifiez l'angle (Visuel ou Clavier) :")
+								GlobalLogger.info(tr("MSG_CONSOLE_GENERAL_7"))
 								get_viewport().set_input_as_handled()
 								return
 							if event.keycode == KEY_R:
 								move_step = 3
-								GlobalLogger.info("RÉFÉRENCE : Choisissez le Pivot")
+								GlobalLogger.info(tr("MSG_CONSOLE_REFERENCE_2"))
 								get_viewport().set_input_as_handled()
 								return
 						if event is InputEventMouseMotion:
@@ -831,7 +831,7 @@ func _unhandled_input(event):
 						if current_command == CommandType.MIRROR:
 							mirror_p2 = current_snap_pos
 							move_step = 3 
-							GlobalLogger.info("Effacer source ? [O]ui / [N]on :")
+							GlobalLogger.info(tr("MSG_CONSOLE_MIRROR_4"))
 							
 							get_viewport().gui_release_focus()
 						else:
@@ -853,8 +853,8 @@ func _unhandled_input(event):
 					if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) or event.is_action_pressed("ui_accept"):
 						ref_p1 = snap
 						move_step = 4
-						if current_command == CommandType.SCALE: GlobalLogger.info("RÉFÉRENCE : Second point (Longueur référence)")
-						else: GlobalLogger.info("RÉFÉRENCE : Point Départ Angle")
+						GlobalLogger.info(tr("MSG_CONSOLE_REFERENCE_3"))
+						GlobalLogger.info(tr("MSG_CONSOLE_REFERENCE_4"))
 						get_viewport().set_input_as_handled()
 						return
 
@@ -864,8 +864,8 @@ func _unhandled_input(event):
 					if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) or event.is_action_pressed("ui_accept"):
 						ref_p2 = snap
 						move_step = 5
-						if current_command == CommandType.SCALE: GlobalLogger.info("RÉFÉRENCE : Troisième point (Nouvelle longueur)")
-						else: GlobalLogger.info("RÉFÉRENCE : Point Arrivée Angle")
+						if current_command == CommandType.SCALE: GlobalLogger.info(tr("MSG_CONSOLE_REFERENCE_6"))
+						else: GlobalLogger.info(tr("MSG_CONSOLE_REFERENCE_5"))
 						get_viewport().set_input_as_handled()
 						return
 
@@ -952,7 +952,7 @@ func _unhandled_input(event):
 							print("DEBUG TRIM: clic gauche détecté à l'étape 0")
 							trim_fence_start = _get_snap_pos(mouse_pos_world, [])
 							trim_step = 1
-							GlobalLogger.info("AJUSTER : Déplacez le curseur et cliquez pour définir le second point de la ligne de coupe.")
+							GlobalLogger.info(tr("MSG_CONSOLE_TRIM_4"))
 							get_viewport().set_input_as_handled()
 							return
 						
@@ -1060,9 +1060,7 @@ func _store_initial_positions_for_preview():
 		if "is_circle" in ent and ent.is_circle:
 			data["center"] = ent.circle_center
 			data["radius"] = ent.circle_radius
-			if "circle_visual_target" in ent:
-				data["target"] = ent.circle_visual_target
-		
+					
 		# Sauvegarde propriétés Arc
 		elif "is_arc" in ent and ent.is_arc:
 			data["center"] = ent.arc_center
@@ -1103,17 +1101,13 @@ func _apply_preview_offset(offset: Vector2):
 			
 			if ("is_circle" in ghost and ghost.is_circle) or ("is_arc" in ghost and ghost.is_arc):
 				ghost.global_transform = start_trans
-				
-				if "is_circle" in ghost and ghost.is_circle:
-					ghost.circle_center = data["center"] + offset
-					ghost.circle_radius = data["radius"]
-					if data.has("target") and data["target"] != Vector2.ZERO and ("circle_visual_target" in ghost):
-						ghost.circle_visual_target = data["target"] + offset
-					if ghost.has_method("_mark_dirty"):
-						ghost._mark_dirty()
-					if ghost.has_method("update_visuals"):
-						ghost.update_visuals()
-					continue
+				ghost.circle_center = data["center"] + offset
+				ghost.circle_radius = data["radius"]
+				if ghost.has_method("_mark_dirty"):
+					ghost._mark_dirty()
+				if ghost.has_method("update_visuals"):
+					ghost.update_visuals()
+				continue
 				
 				if "is_arc" in ghost and ghost.is_arc:
 					var new_center = data["center"] + offset
@@ -1134,9 +1128,6 @@ func _apply_preview_offset(offset: Vector2):
 			# Comme l'offset est le même pour tous, l'écart entre les objets est conservé !
 			ghost.global_position = start_trans.origin + offset
 			
-			# Gestion Cercle
-			if "is_circle" in ghost and ghost.is_circle and data["target"] != Vector2.ZERO:
-				ghost.circle_visual_target = data["target"] + offset
 			
 			ghost.queue_redraw()
 
@@ -1156,8 +1147,6 @@ func _revert_preview_positions():
 			if "is_circle" in ent and ent.is_circle:
 				ent.circle_center = data["center"]
 				ent.circle_radius = data["radius"]
-				if "circle_visual_target" in ent:
-					ent.circle_visual_target = data["target"]
 				ent.queue_redraw()
 			
 			# Restauration spécifique Arc
@@ -1191,7 +1180,7 @@ func apply_move_to_selection(offset: Vector2):
 	
 	undo_redo.commit_action()
 	
-	GlobalLogger.success("Déplacement enregistré.")
+	GlobalLogger.success(tr("MSG_CONSOLE_MOVE_1"))
 
 func count_selected() -> int:
 	var c = 0
@@ -1229,10 +1218,10 @@ func start_grip_edit():
 		# On crée une copie statique de l'objet AVANT modif
 		_create_ghost_from_entity(active_grip_entity)
 			
-	GlobalLogger.warning("Modification géométrie...")
+	GlobalLogger.warning(tr("MSG_CONSOLE_GRIP_3"))
 
 func finish_grip_edit():
-	GlobalLogger.success("Position validée.")
+	GlobalLogger.success(tr("MSG_CONSOLE_GRIP_2"))
 	current_state = State.IDLE
 	
 	# --- NETTOYAGE ---
@@ -1242,7 +1231,7 @@ func finish_grip_edit():
 	if snap_manager: snap_manager.reset_visuals()
 
 func cancel_grip_edit():
-	GlobalLogger.info("Annulation.")
+	GlobalLogger.info(tr("MSG_CONSOLE_GRIP_1"))
 	if active_grip_entity:
 		active_grip_entity.move_point(active_grip_index, original_grip_pos)
 		if cad_cursor: cad_cursor.global_position = original_grip_pos
@@ -1262,7 +1251,7 @@ func deselect_all():
 	var entities = _get_all_flat_entities()
 	for ent in entities:
 		ent.set_selected(false)
-	GlobalLogger.info("Sélection vide.")
+	GlobalLogger.info(tr("MSG_CONSOLE_SELECTION_3"))
 	
 	# --- AJOUT SIGNAL ---
 	emit_signal("selection_changed", [])
@@ -1300,7 +1289,7 @@ func finish_selection(end_pos_world: Vector2):
 		ent.set_selected(true)
 	
 	if hit_something: 
-		GlobalLogger.info(str(count_selected()) + " objet(s) sélectionné(s).")
+		GlobalLogger.info(str(count_selected()) + tr("MSG_CONSOLE_SELECTION_1"))
 		
 	# --- AJOUT SIGNAL ---
 	emit_signal("selection_changed", get_selected_entities_list())
@@ -1331,7 +1320,7 @@ func delete_selection():
 	if snap_manager: snap_manager.reset_visuals()
 	if cad_cursor: cad_cursor.modulate = Color.WHITE
 	
-	GlobalLogger.info(str(entities.size()) + " objet(s) supprimé(s).")
+	GlobalLogger.info(str(entities.size()) + tr("MSG_CONSOLE_SELECTION_2"))
 
 func _draw():
 	# --- DESSIN STANDARD (Sélection Box) ---
@@ -1462,9 +1451,6 @@ func _create_ghost_from_entity(original_ent: Node2D):
 		ghost.is_circle = true
 		ghost.circle_center = original_ent.circle_center
 		ghost.circle_radius = original_ent.circle_radius
-		# On copie aussi la cible visuelle si elle existe
-		if "circle_visual_target" in original_ent:
-			ghost.circle_visual_target = original_ent.circle_visual_target
 	elif "is_arc" in original_ent and original_ent.is_arc:
 		ghost.is_arc = true
 		ghost.arc_center = original_ent.arc_center
@@ -1564,8 +1550,6 @@ func _store_preview_ghosts_for_copy():
 		if "is_circle" in ent and ent.is_circle:
 			data["center"] = ent.circle_center
 			data["radius"] = ent.circle_radius
-			if "circle_visual_target" in ent:
-				data["target"] = ent.circle_visual_target
 		elif "is_arc" in ent and ent.is_arc:
 			data["center"] = ent.arc_center
 			data["radius"] = ent.arc_radius
@@ -1574,7 +1558,6 @@ func _store_preview_ghosts_for_copy():
 				
 		# C'est l'ID du fantôme qui sert de clé
 		move_initial_data[ghost.get_instance_id()] = data
-
 
 func apply_copy_to_selection(offset: Vector2):
 	var entities = _get_all_flat_entities()
@@ -1606,7 +1589,7 @@ func apply_copy_to_selection(offset: Vector2):
 				
 			count += 1
 	
-	GlobalLogger.success("Copié " + str(count) + " objets.")
+	GlobalLogger.success(tr("MSG_CONSOLE_COPY_1") + str(count) + tr("MSG_CONSOLE_COPY_3"))
 	
 	
 	# --- HELPERS LOGIQUE ---
@@ -1624,8 +1607,6 @@ func _copy_custom_properties(source, target):
 		target.is_circle = true
 		target.circle_center = source.circle_center
 		target.circle_radius = source.circle_radius
-		if "circle_visual_target" in source:
-			target.circle_visual_target = source.circle_visual_target
 	elif "is_arc" in source and source.is_arc:
 		target.is_arc = true
 		target.arc_center = source.arc_center
@@ -1710,8 +1691,6 @@ func _store_ghosts_from_clipboard():
 		if "is_circle" in ghost and ghost.is_circle:
 			data["center"] = ghost.circle_center
 			data["radius"] = ghost.circle_radius
-			if "circle_visual_target" in ghost:
-				data["target"] = ghost.circle_visual_target
 		elif "is_arc" in ghost and ghost.is_arc:
 			data["center"] = ghost.arc_center
 			data["radius"] = ghost.arc_radius
@@ -1724,7 +1703,7 @@ func _store_ghosts_from_clipboard():
 func apply_paste_from_clipboard(offset: Vector2):
 	var count = 0
 	if not world:
-		GlobalLogger.error("World non initialisé, impossible de coller")
+		GlobalLogger.warning(tr("MSG_CONSOLE_ARC_1"))
 		return
 		
 	var entities_root = world.get_node("Entities") 
@@ -1855,7 +1834,6 @@ func _update_mirror_ghosts_preview(p1: Vector2, p2: Vector2):
 				var t_local = axis_transform.affine_inverse() * data["target"]
 				# On applique le miroir sur le point local (Y inversé)
 				t_local.y = -t_local.y 
-				ghost.circle_visual_target = axis_transform * t_local
 				
 			ghost.queue_redraw()
 		else:
@@ -1910,18 +1888,16 @@ func _finalize_mirror(erase_source: bool):
 	undo_redo.commit_action()
 	
 	if erase_source:
-		GlobalLogger.success("Mirroir effectué (Source effacée).")
+		GlobalLogger.success(tr("MSG_CONSOLE_MIRROR_5"))
 		deselect_all() # Car les objets sélectionnés n'existent plus
 	else:
-		GlobalLogger.success("Mirroir effectué (Source conservée).")
+		GlobalLogger.success(tr("MSG_CONSOLE_MIRROR_6"))
 		cancel_command()
 
-# Helper mathématique complet pour transformer l'objet final
+# Helper mathématique complet pour transfor mer l'objet final
 func _apply_mirror_transform(ent: Node2D, p1: Vector2, p2: Vector2):
 	if ent.is_circle:
 		ent.circle_center = _reflect_point(ent.circle_center, p1, p2)
-		if ent.get("circle_visual_target"):
-			ent.circle_visual_target = _reflect_point(ent.circle_visual_target, p1, p2)
 	elif ent is Line2D:
 		# Pour une ligne, on doit refléter chaque point individuellement
 		for i in range(ent.get_point_count()):
@@ -1968,9 +1944,8 @@ func _update_rotate_ghosts_preview(angle_diff):
 			if "is_circle" in ent and ent.is_circle:
 				ent.circle_center = _rotate_point_around_pivot(data["center"], rotation_pivot, angle_diff)
 				ent.circle_radius = data["radius"]
-				if data.has("target") and data["target"] != Vector2.ZERO and ("circle_visual_target" in ent):
-					ent.circle_visual_target = _rotate_point_around_pivot(data["target"], rotation_pivot, angle_diff)
-				ent._mark_dirty()
+				if data.has("target") and data["target"] != Vector2.ZERO and data["target"] != Vector2.ZERO:
+									ent._mark_dirty()
 				ent.update_visuals()
 				continue
 			
@@ -2000,8 +1975,7 @@ func _update_rotate_ghosts_preview(angle_diff):
 		# 1. Calcul de la nouvelle position par rapport au PIVOT
 		# Formule : Pivot + (Vecteur Pivot->Objet).rotated(angle)
 		var vec_from_pivot = start_pos - rotation_pivot
-		var new_pos = rotation_pivot + vec_from_pivot.rotated(angle_diff)
-		ent.global_position = new_pos
+		ent.global_position = rotation_pivot + vec_from_pivot.rotated(angle_diff)
 		
 		# 2. Calcul de la nouvelle rotation
 		ent.global_rotation = start_rot + angle_diff
@@ -2014,8 +1988,6 @@ func _action_rotate_entities(entities: Array, pivot: Vector2, angle: float):
 			if "is_circle" in ent and ent.is_circle:
 				# Rotation du CENTRE du cercle (coordonnées monde)
 				ent.circle_center = _rotate_point_around_pivot(ent.circle_center, pivot, angle)
-				if "circle_visual_target" in ent and ent.circle_visual_target != Vector2.ZERO:
-					ent.circle_visual_target = _rotate_point_around_pivot(ent.circle_visual_target, pivot, angle)
 				ent._mark_dirty()
 				ent.update_visuals()
 			
@@ -2058,7 +2030,7 @@ func apply_rotate_to_selection(angle_rad: float):
 	undo_redo.add_undo_method(_action_rotate_entities.bind(entities, rotation_pivot, -angle_rad))
 	
 	undo_redo.commit_action()
-	GlobalLogger.success("Rotation effectuée.")
+	GlobalLogger.success(tr("MSG_CONSOLE_ROTATE_3"))
 
 
 # Force la position target à être alignée horizontalement ou verticalement avec base
@@ -2115,8 +2087,6 @@ func _update_scale_ghosts_preview(scale_ratio):
 			if "is_circle" in ent and ent.is_circle:
 				ent.circle_center = _scale_point_around_pivot(data["center"], scale_pivot, scale_ratio)
 				ent.circle_radius = data["radius"] * scale_ratio
-				if data.has("target") and data["target"] != Vector2.ZERO and ("circle_visual_target" in ent):
-					ent.circle_visual_target = _scale_point_around_pivot(data["target"], scale_pivot, scale_ratio)
 				ent._mark_dirty()
 				ent.update_visuals()
 				continue
@@ -2155,10 +2125,6 @@ func _update_scale_ghosts_preview(scale_ratio):
 		# 3. Gestion Cercle
 		if "is_circle" in ent and ent.is_circle:
 			ent.circle_radius = data["radius"] * scale_ratio
-			# La cible visuelle s'éloigne aussi du pivot
-			if data["target"] != Vector2.ZERO:
-				var t_vec = data["target"] - scale_pivot
-				ent.circle_visual_target = scale_pivot + (t_vec * scale_ratio)
 			ent.queue_redraw()
 		
 		# 4. Gestion Arc
@@ -2186,31 +2152,21 @@ func apply_scale_to_selection(factor: float):
 # Helper Undo/Redo
 func _action_scale_entities(entities: Array, pivot: Vector2, factor: float):
 	for ent in entities:
-		if is_instance_valid(ent):
+		if ("is_circle" in ent and ent.is_circle) or ("is_arc" in ent and ent.is_arc):
+			# Mise à l'échelle du centre et du rayon
+			ent.arc_center = _scale_point_around_pivot(ent.arc_center, pivot, factor)
+			ent.arc_radius *= factor
+			# Les angles ne changent pas lors d'une mise à l'échelle uniforme
+			ent.update_arc_properties(ent.arc_center, ent.arc_radius, ent.arc_start_angle, ent.arc_end_angle)
+			ent._mark_dirty()
+			ent.update_visuals()
 			
-			if "is_circle" in ent and ent.is_circle:
-				ent.circle_center = _scale_point_around_pivot(ent.circle_center, pivot, factor)
-				ent.circle_radius *= factor
-				if "circle_visual_target" in ent and ent.circle_visual_target != Vector2.ZERO:
-					ent.circle_visual_target = _scale_point_around_pivot(ent.circle_visual_target, pivot, factor)
-				ent._mark_dirty()
-				ent.update_visuals()
-			
-			elif "is_arc" in ent and ent.is_arc:
-				# Mise à l'échelle du centre et du rayon
-				ent.arc_center = _scale_point_around_pivot(ent.arc_center, pivot, factor)
-				ent.arc_radius *= factor
-				# Les angles ne changent pas lors d'une mise à l'échelle uniforme
-				ent.update_arc_properties(ent.arc_center, ent.arc_radius, ent.arc_start_angle, ent.arc_end_angle)
-				ent._mark_dirty()
-				ent.update_visuals()
-			
-			elif ent is Line2D:
-				# 1. Scale Node Position
-				ent.position = _scale_point_around_pivot(ent.position, pivot, factor)
-				# 2. Scale Internal Points
-				for i in range(ent.get_point_count()):
-					ent.points[i] *= factor
+		elif ent is Line2D:
+			# 1. Scale Node Position
+			ent.position = _scale_point_around_pivot(ent.position, pivot, factor)
+			# 2. Scale Internal Points
+			for i in range(ent.get_point_count()):
+				ent.points[i] *= factor
 
 func _get_entity_under_mouse(pos: Vector2) -> Node2D:
 	var entities = _get_all_flat_entities()
@@ -2346,7 +2302,7 @@ func _finalize_offset(mouse_pos: Vector2):
 	undo_redo.add_undo_method(parent.remove_child.bind(new_ent))
 	undo_redo.commit_action()
 	
-	GlobalLogger.success("Objet décalé créé.")
+	GlobalLogger.success(tr("MSG_CONSOLE_OFFSET_11"))
 	_clear_ghosts()
 
 
@@ -2706,7 +2662,7 @@ func _capture_entity_geometry(ent):
 			"pos": ent.position,
 			"center": ent.circle_center,
 			"radius": ent.circle_radius,
-			"target": ent.circle_visual_target if ("circle_visual_target" in ent) else Vector2.ZERO
+			"target": Vector2.ZERO
 		}
 		return data
 	if "is_arc" in ent and ent.is_arc:
@@ -3095,8 +3051,6 @@ func _action_restore_geometry(ent, data):
 		if "is_point" in ent: ent.is_point = false
 		ent.circle_center = data.get("center", ent.circle_center)
 		ent.circle_radius = data.get("radius", ent.circle_radius)
-		if "circle_visual_target" in ent and data.has("target"):
-			ent.circle_visual_target = data.get("target", Vector2.ZERO)
 		if ent.has_method("_mark_dirty"): ent._mark_dirty()
 		if ent.has_method("update_visuals"): ent.update_visuals()
 		ent.queue_redraw()

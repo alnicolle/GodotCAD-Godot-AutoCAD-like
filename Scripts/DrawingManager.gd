@@ -42,7 +42,7 @@ func _ready():
 
 func _on_ortho_toggled(toggled_on):
 	is_ortho_active = toggled_on
-	GlobalLogger.info("Mode Ortho " + ("activé" if toggled_on else "désactivé"))
+	GlobalLogger.info(tr("MSG_CONSOLE_ORTHO_1") + (tr("MSG_CONSOLE_ORTHO_2") if toggled_on else tr("MSG_CONSOLE_ORTHO_3")))
 
 func _unhandled_input(event):
 	# CORRECTION 3 : ÉCHAP INTELLIGENT
@@ -124,8 +124,7 @@ func spawn_circle(center: Vector2, radius: float, is_preview: bool = false) -> L
 	l.is_circle = true
 	l.circle_center = center
 	l.circle_radius = radius
-	l.circle_visual_target = center + Vector2(radius, 0)
-	
+		
 	# Un cercle n'utilise pas le tableau de points standard du Line2D
 	l.points = PackedVector2Array() 
 	
@@ -338,7 +337,6 @@ func handle_circle_input(event):
 			var center = current_line.circle_center
 			var new_radius = center.distance_to(final_pos)
 			current_line.circle_radius = new_radius
-			current_line.circle_visual_target = final_pos
 			current_line.queue_redraw()
 
 func finish_circle():

@@ -19,11 +19,11 @@ var snap_modes = {
 }
 
 var mode_names = {
-	"ENDPOINT": "Extrémité",
-	"MIDPOINT": "Milieu",
-	"CENTER": "Centre",
-	"INTERSECTION": "Intersection",
-	"PERPENDICULAR": "Perpendiculaire"
+	"ENDPOINT": tr("MSG_CONSOLE_OSNAP_3"),
+	"MIDPOINT": tr("MSG_CONSOLE_OSNAP_4"),
+	"CENTER": tr("MSG_CONSOLE_OSNAP_5"),
+	"INTERSECTION": tr("MSG_CONSOLE_OSNAP_6"),
+	"PERPENDICULAR": "MSG_CONSOLE_OSNAP_7"
 }
 
 func _ready():
@@ -46,7 +46,7 @@ func _on_check_snap_toggled(toggled_on):
 	is_snapping_active = toggled_on
 	modulate = Color.WHITE if is_snapping_active else Color(1, 1, 1, 0.5)
 	
-	GlobalLogger.debug("Accrochage " + ("activé" if is_snapping_active else "désactivé"))
+	GlobalLogger.debug(tr("MSG_CONSOLE_OSNAP_1") if is_snapping_active else tr("MSG_CONSOLE_OSNAP_2"))
 	
 	if not is_snapping_active:
 		reset_visuals()

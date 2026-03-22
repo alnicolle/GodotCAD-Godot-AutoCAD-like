@@ -46,15 +46,16 @@ extends Node2D
 var ui_hover_counter = 0
 var undo_redo = UndoRedo.new()
 
-var rdm_manager: RDMManager
-var distributed_force_start: Vector2 = Vector2.INF
-var is_creating_distributed_force: bool = false
-var rdm_place_mode: String = ""
-var rdm_place_support_type: String = ""
-var rdm_place_force_value: Vector2 = Vector2.ZERO
-var rdm_consume_left_release: bool = false
+var rdm_controller: RDMController
+
+
 
 func _ready():
+	# Initialiser le RDMController
+	rdm_controller = RDMController.new()
+	rdm_controller.main_node = self
+	add_child(rdm_controller)
+	
 	# Connexions existantes
 	camera.zoom_changed.connect(world.update_lines_width)
 	console.command_entered.connect(_on_console_command)
@@ -85,52 +86,28 @@ func _ready():
 	# Connexions des boutons RDM
 	if btn_support_simple:
 		btn_support_simple.pressed.connect(func(): 
-			rdm_place_mode = "support"
-			rdm_place_support_type = "simple"
-			GlobalLogger.info("RDM: cliquez pour placer un appui simple")
-			# Activer le curseur pour le snap
-			if cad_cursor:
-				cad_cursor.show_crosshair = true
-				cad_cursor.queue_redraw()
+			rdm_controller.start_placement("support", "simple")
 		)
 	else:
 		print("WARNING: btn_support_simple non trouvé")
 		
 	if btn_support_articulation:
 		btn_support_articulation.pressed.connect(func(): 
-			rdm_place_mode = "support"
-			rdm_place_support_type = "articulation"
-			GlobalLogger.info("RDM: cliquez pour placer un appui articulation")
-			# Activer le curseur pour le snap
-			if cad_cursor:
-				cad_cursor.show_crosshair = true
-				cad_cursor.queue_redraw()
+			rdm_controller.start_placement("support", "articulation")
 		)
 	else:
 		print("WARNING: btn_support_articulation non trouvé")
 		
 	if btn_support_encastrement:
 		btn_support_encastrement.pressed.connect(func(): 
-			rdm_place_mode = "support"
-			rdm_place_support_type = "encastrement"
-			GlobalLogger.info("RDM: cliquez pour placer un encastrement")
-			# Activer le curseur pour le snap
-			if cad_cursor:
-				cad_cursor.show_crosshair = true
-				cad_cursor.queue_redraw()
+			rdm_controller.start_placement("support", "encastrement")
 		)
 	else:
 		print("WARNING: btn_support_encastrement non trouvé")
 		
 	if btn_force_ponctuelle:
 		btn_force_ponctuelle.pressed.connect(func(): 
-			rdm_place_mode = "force"
-			rdm_place_force_value = Vector2(0, -1000)
-			GlobalLogger.info("RDM: cliquez pour placer une force ponctuelle")
-			# Activer le curseur pour le snap
-			if cad_cursor:
-				cad_cursor.show_crosshair = true
-				cad_cursor.queue_redraw()
+			rdm_controller.start_placement("force", "", Vector2(0, -1000))
 		)
 	else:
 		print("WARNING: btn_force_ponctuelle non trouvé")
@@ -138,12 +115,7 @@ func _ready():
 	# Ajouter un bouton pour force répartie
 	if btn_force_distributed:
 		btn_force_distributed.pressed.connect(func():
-			rdm_place_mode = "distributed_start"
-			GlobalLogger.info("RDM: cliquez pour définir le début de la force répartie")
-			# Activer le curseur pour le snap
-			if cad_cursor:
-				cad_cursor.show_crosshair = true
-				cad_cursor.queue_redraw()
+			rdm_controller.start_placement("distributed_start")
 		)
 	else:
 		print("WARNING: btn_force_distributed non trouvé")
@@ -404,7 +376,8 @@ func _on_import_pressed():
 # Signal du ExportDialog
 func _on_export_dialog_file_selected(path):
 	# On appelle le service en lui passant le chemin ET le monde (pour qu'il trouve les entités)
-	DXFService.save_dxf_r12(path, self)
+	DXFService.save_dxf(path, self)  # Utilise le nouveau format DXF 2000+ par défaut
+	# Pour forcer l'ancien format R12: DXFService.save_dxf(path, self, false)
 	# Le code original [cite: 31] est maintenant délégué
 	
 	# Gestion du curseur (inchangée)
@@ -503,90 +476,46 @@ func _on_console_command(text: String):
 			
 		# --- COMMANDES RDM ---
 		"RDM_TEST", "TEST_RDM":
-			create_test_rdm_structure()
+			rdm_controller.create_test_structure()
 			console.log_message("Structure de test RDM créée.", Color.GREEN)
 			
 		"RDM_SUPPORT_SIMPLE":
-			create_rdm_support(get_global_mouse_position(), "simple")
+			rdm_controller.create_support(get_global_mouse_position(), "simple")
 			console.log_message("Support simple créé.", Color.GREEN)
 			
 		"RDM_SUPPORT_ARTICULATION":
-			create_rdm_support(get_global_mouse_position(), "articulation")
+			rdm_controller.create_support(get_global_mouse_position(), "articulation")
 			console.log_message("Articulation créée.", Color.GREEN)
 			
 		"RDM_SUPPORT_ENCASTREMENT":
-			create_rdm_support(get_global_mouse_position(), "encastrement")
+			rdm_controller.create_support(get_global_mouse_position(), "encastrement")
 			console.log_message("Encastrement créé.", Color.GREEN)
 			
 		"RDM_FORCE":
-			create_rdm_force(get_global_mouse_position(), Vector2(0, -1000))
+			rdm_controller.create_force(get_global_mouse_position(), Vector2(0, -1000))
 			console.log_message("Force ponctuelle créée.", Color.GREEN)
 			
 		"RDM_DISTRIBUTED":
-			if not is_creating_distributed_force:
-				_start_distributed_force()
+			if not rdm_controller.is_creating_distributed_force:
+				rdm_controller.distributed_force_start = get_global_mouse_position()
+				rdm_controller.is_creating_distributed_force = true
+				GlobalLogger.info("RDM: cliquez pour définir la fin de la force répartie")
 			else:
-				_finish_distributed_force(get_global_mouse_position())
+				rdm_controller.create_distributed_force(rdm_controller.distributed_force_start, get_global_mouse_position(), -1000.0)
+				rdm_controller.is_creating_distributed_force = false
 			console.log_message("Force répartie créée.", Color.GREEN)
 			
 		"RDM_CALCUL", "CALCUL_RDM":
-			_on_calculate_rdm_pressed()
+			rdm_controller.calculate_rdm()
 			
 		_: 
 			console.log_message("Commande inconnue : " + cmd, Color.RED)
 			
 func _input(event):
 	# --- RDM : PLACEMENT PRIORITAIRE (BLOQUE LA SÉLECTION/GRIPS) ---
-	if ui_hover_counter <= 0 and rdm_place_mode != "":
-		# Consommer aussi le relâchement (sinon SelectionManager fait finish_selection)
-		if event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			if rdm_consume_left_release:
-				rdm_consume_left_release = false
-				get_viewport().set_input_as_handled()
-				return
-		
-		# Prévisualisation snap + consommation du mouvement pour éviter hover/grips
-		if event is InputEventMouseMotion:
-			var pos_preview = camera.get_global_mouse_position()
-			if snap_manager and snap_manager.has_method("get_snapped_position") and world and world.has_node("Entities") and camera:
-				pos_preview = snap_manager.get_snapped_position(pos_preview, world.get_node("Entities"), camera.zoom.x)
-			if cad_cursor:
-				cad_cursor.global_position = pos_preview
-				cad_cursor.queue_redraw()
-			get_viewport().set_input_as_handled()
+	if ui_hover_counter <= 0 and rdm_controller and rdm_controller.is_placement_active():
+		if rdm_controller.handle_input(event):
 			return
-		
-		# Placement au clic gauche (press)
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			var pos = camera.get_global_mouse_position()
-			if snap_manager and snap_manager.has_method("get_snapped_position") and world and world.has_node("Entities") and camera:
-				pos = snap_manager.get_snapped_position(pos, world.get_node("Entities"), camera.zoom.x)
-			match rdm_place_mode:
-				"support":
-					create_rdm_support(pos, rdm_place_support_type)
-					rdm_place_mode = ""
-				"force":
-					create_rdm_force(pos, rdm_place_force_value)
-					rdm_place_mode = ""
-				"distributed_start":
-					distributed_force_start = pos
-					rdm_place_mode = "distributed_end"
-					GlobalLogger.info("RDM: cliquez pour définir la fin de la force répartie")
-				"distributed_end":
-					create_rdm_distributed_force(distributed_force_start, pos, -1000.0)
-					distributed_force_start = Vector2.INF
-					rdm_place_mode = ""
-			# Désactiver le curseur si on a terminé le placement
-			if rdm_place_mode == "" and cad_cursor:
-				cad_cursor.show_crosshair = true
-				cad_cursor.queue_redraw()
-			rdm_consume_left_release = true
-			get_viewport().set_input_as_handled()
-			return
-		
-		# Bloquer tout autre événement pendant le mode RDM
-		get_viewport().set_input_as_handled()
-		return
 	
 	# DEBUG : Afficher seulement les clics
 	if event is InputEventMouseButton and event.pressed:
@@ -597,16 +526,9 @@ func _input(event):
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			if ui_hover_counter <= 0:
 				selection_manager.cancel_selection()
-				# Annuler la création RDM en cours
-				rdm_place_mode = ""
-				rdm_consume_left_release = false
-				distributed_force_start = Vector2.INF
-				is_creating_distributed_force = false
-				GlobalLogger.info("RDM: création annulée")
-				# Désactiver le curseur de snap
-				if cad_cursor:
-					cad_cursor.show_crosshair = true
-					cad_cursor.queue_redraw()
+			# Annuler la création RDM en cours
+			if rdm_controller:
+				rdm_controller.cancel_placement()
 	
 	# Gérer le focus de la console
 	if event is InputEventMouseButton and event.pressed:
@@ -620,15 +542,8 @@ func _input(event):
 
 
 func _unhandled_input(event):
-	if event is InputEventKey and event.keycode == KEY_ESCAPE and rdm_place_mode != "":
-		rdm_place_mode = ""
-		rdm_consume_left_release = false
-		distributed_force_start = Vector2.INF
-		is_creating_distributed_force = false
-		GlobalLogger.info("RDM: création annulée")
-		if cad_cursor:
-			cad_cursor.show_crosshair = true
-			cad_cursor.queue_redraw()
+	if event is InputEventKey and event.keycode == KEY_ESCAPE and rdm_controller and rdm_controller.is_placement_active():
+		rdm_controller.cancel_placement()
 		get_viewport().set_input_as_handled()
 		return
 	
@@ -1036,160 +951,3 @@ func _deferred_update_ribbon_after_layer_change():
 
 func _on_btn_arc_pressed() -> void:
 	pass # Replace with function body.
-
-
-
-
-func _on_calculate_rdm_pressed():
-	if rdm_manager == null:
-		rdm_manager = RDMManager.new(self)
-	
-	# Récupérer toutes les entités récursivement dans tous les calques
-	var all_entities = []
-	var supports = []
-	var forces = []
-	
-	# Chercher dans le monde récursivement
-	if world:
-		_find_entities_recursively(world, all_entities, supports, forces)
-	
-	print("DEBUG: Entités trouvées - Lignes: %d, Supports: %d, Forces: %d" % [all_entities.size(), supports.size(), forces.size()])
-	
-	# Afficher les détails pour debug
-	for i in range(all_entities.size()):
-		print("  Ligne %d: %s (parent: %s)" % [i, all_entities[i].name, all_entities[i].get_parent().name])
-	for i in range(supports.size()):
-		print("  Support %d: %s (%s) (parent: %s)" % [i, supports[i].name, supports[i].get_meta("support_type"), supports[i].get_parent().name])
-	for i in range(forces.size()):
-		print("  Force %d: %s (parent: %s)" % [i, forces[i].name, forces[i].get_parent().name])
-	
-	var result = rdm_manager.calculate_analysis(all_entities, supports, forces)
-
-# Fonction récursive pour chercher dans tous les noeuds
-func _find_entities_recursively(node: Node, all_entities: Array, supports: Array, forces: Array):
-	for child in node.get_children():
-		# Vérifier si c'est un CADEntity
-		if child is CADEntity:
-			# Vérifier si c'est un support
-			if child.has_meta("support_type"):
-				supports.append(child)
-			# Vérifier si c'est une force
-			elif child.has_meta("force_value") or child.has_meta("moment_value") or child.has_meta("force_type"):
-				forces.append(child)
-			# Sinon, c'est une poutre (ligne)
-			else:
-				all_entities.append(child)
-		
-		# Continuer la recherche récursive
-		_find_entities_recursively(child, all_entities, supports, forces)
-
-# --- UTILITAIRES POUR TESTS RDM ---
-
-# Crée un support simple à la position donnée
-func create_rdm_support(position: Vector2, support_type: String = "simple"):
-	print("DEBUG: Création support %s à position %s" % [support_type, position])
-	
-	var support = CADEntity.new()
-	
-	support.global_position = position
-	
-	support.set_meta("support_type", support_type)
-	support.is_point = true
-	support.point_size = 8.0
-	support.point_style = "CROSS"
-	support.points = PackedVector2Array()
-	support.update_visuals()
-	
-	# Ajouter le visuel RDM
-	var visual = RDMVisual.create_support_visual(Vector2.ZERO, support_type)
-	support.add_child(visual)
-	
-	# Ajouter au monde
-	if world and world.has_node("Entities"):
-		world.get_node("Entities").add_child(support)
-		GlobalLogger.info("Support %s créé à %s" % [support_type, position])
-		print("DEBUG: Support ajouté au monde avec succès")
-	else:
-		print("ERROR: world ou Entities non trouvé")
-	
-	return support
-
-# Crée une force à la position donnée
-func create_rdm_force(position: Vector2, force_value: Vector2 = Vector2(0, -1000), moment_value: float = 0.0):
-	var force = CADEntity.new()
-	force.global_position = position
-	force.set_meta("force_value", force_value)
-	force.set_meta("moment_value", moment_value)
-	force.is_point = true
-	force.point_size = 8.0
-	force.point_style = "CROSS"
-	force.points = PackedVector2Array()
-	force.update_visuals()
-	
-	# Ajouter le visuel RDM
-	var visual = RDMVisual.create_force_visual(Vector2.ZERO, force_value)
-	force.add_child(visual)
-	
-	# Ajouter au monde
-	if world and world.has_node("Entities"):
-		world.get_node("Entities").add_child(force)
-		GlobalLogger.info("Force %s N, moment %s N·m créé à %s" % [force_value, moment_value, position])
-	
-	return force
-
-# Crée une force répartie (linéique) sur une poutre
-func create_rdm_distributed_force(start_pos: Vector2, end_pos: Vector2, force_per_meter: float = -1000.0):
-	var distributed_force = CADEntity.new()
-	distributed_force.global_position = start_pos
-	distributed_force.set_meta("force_type", "distributed")
-	distributed_force.set_meta("start_pos", start_pos)
-	distributed_force.set_meta("end_pos", end_pos)
-	distributed_force.set_meta("force_per_meter", force_per_meter)
-	
-	# Ajouter une ligne pour rendre le CADEntity visible et sélectionnable
-	distributed_force.add_point(Vector2.ZERO)
-	distributed_force.add_point(end_pos - start_pos)
-	distributed_force.width = 2.0
-	distributed_force.default_color = Color.RED
-	
-	# Ajouter le visuel RDM
-	var visual = RDMVisual.create_distributed_force_visual(Vector2.ZERO, end_pos - start_pos, force_per_meter)
-	distributed_force.add_child(visual)
-	
-	# Ajouter au monde
-	if world and world.has_node("Entities"):
-		world.get_node("Entities").add_child(distributed_force)
-		GlobalLogger.info("Force répartie %.1f N/m créée de %s à %s" % [force_per_meter, start_pos, end_pos])
-	
-	return distributed_force
-
-# Test rapide avec une structure simple
-func create_test_rdm_structure():
-	# Créer une poutre simple (2 points)
-	var line = CADEntity.new()
-	line.add_point(Vector2(100, 200))
-	line.add_point(Vector2(400, 200))
-	if world and world.has_node("Entities"):
-		world.get_node("Entities").add_child(line)
-	
-	# Ajouter 2 appuis
-	create_rdm_support(Vector2(100, 200), "articulation")
-	create_rdm_support(Vector2(400, 200), "simple")
-	
-	# Ajouter une force au milieu (sur la poutre, pas sur un nœud existant)
-	create_rdm_force(Vector2(250, 200), Vector2(0, 5000))
-	
-	GlobalLogger.info("Structure de test RDM créée")
-
-# --- FONCTIONS POUR FORCES RÉPARTIES ---
-
-func _start_distributed_force():
-	distributed_force_start = get_global_mouse_position()
-	is_creating_distributed_force = true
-	GlobalLogger.info("Cliquez pour définir la fin de la force répartie")
-
-func _finish_distributed_force(end_pos: Vector2):
-	if distributed_force_start != Vector2.INF:
-		create_rdm_distributed_force(distributed_force_start, end_pos, -1000)
-		distributed_force_start = Vector2.INF
-		is_creating_distributed_force = false

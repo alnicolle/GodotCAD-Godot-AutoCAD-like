@@ -27,7 +27,7 @@ func _ready():
 	if not "ISOLATION" in linetypes:
 		linetype_names.append("ISOLATION")
 
-	GlobalLogger.info("LinetypeManager : " + str(linetypes.size()) + " types chargés.")
+	GlobalLogger.info(tr("MSG_LINETYPE_MANAGER_1") + str(linetypes.size()))
 	
 	# --- TEST TEMPORAIRE ---
 	print("--- VÉRIFICATION DES TYPES ---")
