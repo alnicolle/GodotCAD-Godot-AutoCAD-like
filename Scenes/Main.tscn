@@ -24,27 +24,35 @@
 [ext_resource type="Texture2D" uid="uid://r4crhbmpy360" path="res://Ressources/orthogonal.png" id="18_vs04g"]
 [ext_resource type="PackedScene" uid="uid://b4wd0vpkr7673" path="res://Scenes/DynamicInput.tscn" id="19_6ehlx"]
 [ext_resource type="Texture2D" uid="uid://bpmk4qac3n7sw" path="res://Ressources/appui_simple.png" id="19_c5snn"]
+[ext_resource type="Texture2D" uid="uid://daqhu4p1lxi0m" path="res://Ressources/exportation_dxf.png" id="20_f7hdo"]
 [ext_resource type="Script" uid="uid://bdj2l6fonh0fi" path="res://Scripts/CADCursor.gd" id="20_utia5"]
+[ext_resource type="Texture2D" uid="uid://cgnqq2omcm1j1" path="res://Ressources/importation_dxf.png" id="21_clvyn"]
 [ext_resource type="Script" uid="uid://b0hvlg70s6xcp" path="res://Scripts/SelectionManager.gd" id="21_f7hdo"]
 [ext_resource type="PackedScene" uid="uid://bjnuydvkgqir6" path="res://Scenes/LayerDialog.tscn" id="21_jyqft"]
 [ext_resource type="Texture2D" uid="uid://4ebpub26bbi3" path="res://Ressources/articulation.png" id="21_u7mjy"]
+[ext_resource type="Texture2D" uid="uid://cpi8h5rrtjovw" path="res://Ressources/exportation_dwg.png" id="21_utia5"]
 [ext_resource type="Texture2D" uid="uid://c7l3awpr8bd7r" path="res://Ressources/encastrement.png" id="22_4yxf6"]
 [ext_resource type="PackedScene" uid="uid://b11sehy1jvl" path="res://Scenes/PropertiesPanel.tscn" id="22_c4ay3"]
 [ext_resource type="Script" uid="uid://cmm8vutlsekh5" path="res://Scripts/LayerManager.gd" id="22_clvyn"]
+[ext_resource type="Texture2D" uid="uid://dyjx3dteka1w" path="res://Ressources/importation_dwg.png" id="22_f7hdo"]
 [ext_resource type="Texture2D" uid="uid://bldj2u3f3u4bg" path="res://Ressources/force_ponctuelle.png" id="23_6heos"]
 [ext_resource type="Texture2D" uid="uid://dv7tcbqgdf465" path="res://Ressources/calculatrice.png" id="23_qta6b"]
 [ext_resource type="Script" uid="uid://c2vpvhrnqeaun" path="res://Scripts/LinetypeManager.gd" id="24_3tgeq"]
 [ext_resource type="Texture2D" uid="uid://by0hulcbtcp8f" path="res://Ressources/force_repartie.png" id="24_vvnwx"]
 [ext_resource type="Script" uid="uid://b7oax6vph0j56" path="res://Scripts/CursorManager.gd" id="25_cursor_mgr"]
 [ext_resource type="Script" uid="uid://pcptuvpx0jvg" path="res://Modules/RDM/RDMController.gd" id="37_vvnwx"]
+[ext_resource type="Script" uid="uid://dturv87vkuoym" path="res://Scripts/DXFBaker.gd" id="42_f7hdo"]
+[ext_resource type="PackedScene" uid="uid://4agdnq5bei4w" path="res://Scenes/CADLayoutViewport.tscn" id="43_clvyn"]
+[ext_resource type="Script" uid="uid://b03wq7khnoi3x" path="res://Scripts/CADPaperBg.gd" id="43_d8m2u"]
 
-[node name="Main" type="Node2D" unique_id=242557343 node_paths=PackedStringArray("world", "gui", "export_dialog", "import_dialog", "btn_import", "console", "top_ribbon", "bottom_bar", "btn_move", "btn_copy", "btn_mirror", "btn_rotate", "btn_scale", "btn_offset", "btn_trim", "btn_linetype", "btn_lineweight", "btn_arc", "btn_support_simple", "btn_support_articulation", "btn_support_encastrement", "btn_force_ponctuelle", "btn_force_distributed", "properties_panel", "window_properties", "fps_label", "btn_manage_layers", "cad_cursor", "snap_manager", "selection_manager", "drawing_manager", "layer_manager")]
+[node name="Main" type="Node2D" unique_id=242557343 node_paths=PackedStringArray("world", "gui", "export_dialog", "import_dialog", "dwg_export_dialog", "dwg_import_dialog", "console", "top_ribbon", "bottom_bar", "btn_move", "btn_copy", "btn_mirror", "btn_rotate", "btn_scale", "btn_offset", "btn_trim", "btn_linetype", "btn_lineweight", "btn_arc", "btn_support_simple", "btn_support_articulation", "btn_support_encastrement", "btn_force_ponctuelle", "btn_force_distributed", "properties_panel", "window_properties", "fps_label", "btn_manage_layers", "cad_cursor", "snap_manager", "selection_manager", "drawing_manager", "layer_manager")]
 script = ExtResource("1_hwpts")
 world = NodePath("World")
 gui = NodePath("GUI")
-export_dialog = NodePath("GUI/ExportDialog")
-import_dialog = NodePath("GUI/ImportDialog")
-btn_import = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1/BtnImport")
+export_dialog = NodePath("GUI/DXFExportDialog")
+import_dialog = NodePath("GUI/DXFImportDialog")
+dwg_export_dialog = NodePath("GUI/DWGExportDialog")
+dwg_import_dialog = NodePath("GUI/DWGImportDialog")
 console = NodePath("GUI/Layout/BottomBar/HBoxContainer/ConsolePanel")
 top_ribbon = NodePath("GUI/Layout/TopRibbon")
 bottom_bar = NodePath("GUI/Layout/BottomBar")
@@ -65,7 +73,7 @@ btn_force_ponctuelle = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer
 btn_force_distributed = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces/BtnForceLineique")
 properties_panel = NodePath("GUI/Properties/PropertiesPanel")
 window_properties = NodePath("GUI/Properties")
-fps_label = NodePath("GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/HBoxContainer/FPSLabel")
+fps_label = NodePath("GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/VBoxContainer/HBoxContainer/FPSLabel")
 btn_manage_layers = NodePath("GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol1/BtnCalques")
 cad_cursor = NodePath("GUI/CADCursor")
 snap_manager = NodePath("GUI/Layout/BottomBar/HBoxContainer/SpacerRight/SnapContainer")
@@ -130,18 +138,21 @@ grow_horizontal = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GUI/Layout/TopRibbon" unique_id=1324618268]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 490.0
+offset_bottom = 165.0
 rotation = -0.00039958127
 
 [node name="TabContainer" type="TabContainer" parent="GUI/Layout/TopRibbon/VBoxContainer" unique_id=1880025479]
 layout_mode = 2
+size_flags_vertical = 3
 mouse_filter = 2
-current_tab = 0
+current_tab = 1
 tab_0/title = "UI_2DD"
-tab_1/title = "UI_RDM"
+tab_1/title = "UI_INSER"
+tab_2/title = "UI_RDM"
 
 [node name="Dessin2D" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer" unique_id=1186508177]
+visible = false
 layout_mode = 2
 mouse_filter = 0
 metadata/_tab_index = 0
@@ -244,23 +255,6 @@ size_flags_vertical = 3
 text = "UI_2DD_TRIM"
 icon = ExtResource("14_kpo4j")
 
-[node name="ImportExport" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=1840034961]
-layout_mode = 2
-
-[node name="ImportExportCol1" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport" unique_id=1027623080]
-layout_mode = 2
-mouse_filter = 0
-
-[node name="BtnExport" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1" unique_id=94436024]
-layout_mode = 2
-size_flags_vertical = 3
-text = "UI_2DD_DXF_EXPORT"
-
-[node name="BtnImport" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1" unique_id=1067795542]
-layout_mode = 2
-size_flags_vertical = 3
-text = "UI_2DD_DXF_IMPORT"
-
 [node name="Calques" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D" unique_id=463170928]
 layout_mode = 2
 
@@ -355,10 +349,58 @@ text = "UI_2DD_LINEWEIGHT"
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="Insertion" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer" unique_id=1232183368]
+layout_mode = 2
+mouse_filter = 0
+metadata/_tab_index = 1
+metadata/_tab_name = "UI_INSER"
+
+[node name="Modification" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion" unique_id=775479321]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="ImportExport" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion" unique_id=969518012]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ImportExportCol1" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport" unique_id=243053294]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+
+[node name="BtnExportDXF" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol1" unique_id=1978381240]
+layout_mode = 2
+size_flags_vertical = 3
+text = "UI_INSER_DXF_EXPORT"
+icon = ExtResource("20_f7hdo")
+
+[node name="BtnImportDXF" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol1" unique_id=2126180117]
+layout_mode = 2
+size_flags_vertical = 3
+text = "UI_INSER_DXF_IMPORT"
+icon = ExtResource("21_clvyn")
+
+[node name="ImportExportCol2" type="VBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport" unique_id=1797158026]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+
+[node name="BtnExportDWG" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol2" unique_id=11763308]
+layout_mode = 2
+size_flags_vertical = 3
+text = "UI_INSER_DWG_EXPORT"
+icon = ExtResource("21_utia5")
+
+[node name="BtnImportDWG" type="Button" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol2" unique_id=1039931517]
+layout_mode = 2
+size_flags_vertical = 3
+text = "UI_INSER_DWG_IMPORT"
+icon = ExtResource("22_f7hdo")
+
 [node name="Calcul Structure" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer" unique_id=1568424329]
 visible = false
 layout_mode = 2
-metadata/_tab_index = 1
+metadata/_tab_index = 2
 metadata/_tab_name = "UI_RDM"
 
 [node name="Dessin" type="HBoxContainer" parent="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure" unique_id=341302450]
@@ -449,13 +491,27 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft" unique_id=2010570703]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft" unique_id=1287970443]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="FPSLabel" type="Label" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/HBoxContainer" unique_id=173932086]
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/VBoxContainer" unique_id=2010570703]
 layout_mode = 2
+
+[node name="FPSLabel" type="Label" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/VBoxContainer/HBoxContainer" unique_id=173932086]
+layout_mode = 2
+
+[node name="WorkspaceTabBar" type="TabBar" parent="GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/VBoxContainer" unique_id=1508625608]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+tab_count = 2
+tab_0/title = "Objet"
+tab_1/title = "Présentation"
 
 [node name="ConsolePanel" type="PanelContainer" parent="GUI/Layout/BottomBar/HBoxContainer" unique_id=683617089 node_paths=PackedStringArray("history_label", "input_line")]
 custom_minimum_size = Vector2(800, 75)
@@ -518,18 +574,32 @@ layout_mode = 2
 tooltip_text = "Mode ortho"
 icon = ExtResource("18_vs04g")
 
-[node name="ExportDialog" type="FileDialog" parent="GUI" unique_id=1918052127]
+[node name="DXFExportDialog" type="FileDialog" parent="GUI" unique_id=1918052127]
 oversampling_override = 1.0
 size = Vector2i(640, 400)
 access = 2
 filters = PackedStringArray("*.dxf")
 
-[node name="ImportDialog" type="FileDialog" parent="GUI" unique_id=1656865627]
+[node name="DWGExportDialog" type="FileDialog" parent="GUI" unique_id=1117911279]
+oversampling_override = 1.0
+size = Vector2i(640, 400)
+access = 2
+filters = PackedStringArray("*.dwg")
+
+[node name="DXFImportDialog" type="FileDialog" parent="GUI" unique_id=1656865627]
 title = "Open a File"
 size = Vector2i(640, 400)
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.dxf")
+
+[node name="DWGImportDialog" type="FileDialog" parent="GUI" unique_id=912247970]
+oversampling_override = 1.0
+title = "Open a File"
+size = Vector2i(640, 400)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.dwg")
 
 [node name="DynamicInput" parent="GUI" unique_id=158034261 instance=ExtResource("19_6ehlx")]
 visible = false
@@ -542,11 +612,12 @@ visible = false
 
 [node name="Properties" type="Window" parent="GUI" unique_id=1599268539]
 oversampling_override = 1.0
-position = Vector2i(0, 250)
+position = Vector2i(0, 400)
 size = Vector2i(250, 350)
 min_size = Vector2i(250, 250)
 
 [node name="PropertiesPanel" parent="GUI/Properties" unique_id=1670316951 instance=ExtResource("22_c4ay3")]
+offset_right = 295.0
 
 [node name="SelectionManager" type="Node2D" parent="." unique_id=139498773 node_paths=PackedStringArray("world", "cad_cursor", "snap_manager", "layer_manager", "camera")]
 script = ExtResource("21_f7hdo")
@@ -566,6 +637,36 @@ script = ExtResource("24_3tgeq")
 script = ExtResource("37_vvnwx")
 metadata/_custom_type_script = "uid://pcptuvpx0jvg"
 
+[node name="FPSTimer" type="Timer" parent="." unique_id=1375758816]
+
+[node name="DXFBaker" type="Node2D" parent="." unique_id=223148180]
+script = ExtResource("42_f7hdo")
+
+[node name="WorkspacePaper" type="Node2D" parent="." unique_id=194014966]
+visible = false
+
+[node name="DesktopBg" type="ColorRect" parent="WorkspacePaper" unique_id=580381599]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.4537487, 0.4537487, 0.4537487, 1)
+script = ExtResource("43_d8m2u")
+
+[node name="LayoutCamera" type="Camera2D" parent="WorkspacePaper" unique_id=1893398849]
+script = ExtResource("4_c4ay3")
+
+[node name="PaperSheet" type="ColorRect" parent="WorkspacePaper" unique_id=1074023569]
+offset_left = 307.0
+offset_top = 113.0
+offset_right = 1681.0
+offset_bottom = 964.0
+
+[node name="CADViewportPanel" parent="WorkspacePaper" unique_id=34243318 instance=ExtResource("43_clvyn")]
+
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnPolyligne" to="." method="_on_polyligne_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnCercle" to="." method="_on_circle_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Dessin/BtnArc" to="." method="_on_btn_arc_pressed"]
@@ -574,10 +675,12 @@ metadata/_custom_type_script = "uid://pcptuvpx0jvg"
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol1/BtnEchelle" to="." method="_on_scale_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2/BtnMirroir" to="." method="_on_mirror_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Modification/ModificationCol2/BtnCopier" to="." method="_on_copy_pressed"]
-[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1/BtnExport" to="." method="_on_export_pressed"]
-[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ImportExport/ImportExportCol1/BtnImport" to="." method="_on_import_pressed"]
 [connection signal="item_selected" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur/BtnLinetype" to="." method="_on_linetype_selected"]
 [connection signal="item_selected" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/ProprietesLignes/TypeLargeur/BtnLineweight" to="." method="_on_lineweight_selected"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol1/BtnExportDXF" to="." method="_on_export_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol1/BtnImportDXF" to="." method="_on_import_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol2/BtnExportDWG" to="." method="_on_export_dwg_pressed"]
+[connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Insertion/ImportExport/ImportExportCol2/BtnImportDWG" to="." method="_on_import_dwg_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin/BtnPolyligne2" to="." method="_on_polyligne_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Dessin/BtnArc2" to="." method="_on_btn_arc_pressed"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnAppuiSimple" to="." method="btn_support_simple"]
@@ -585,5 +688,8 @@ metadata/_custom_type_script = "uid://pcptuvpx0jvg"
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Appuis/BtnEncastrement" to="." method="btn_support_encastrement"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Forces/BtnForcePonctuelle" to="." method="btn_force_ponctuelle"]
 [connection signal="pressed" from="GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Calcul Structure/Calculs/BtnCalcul" to="." method="_on_calculate_rdm_pressed"]
-[connection signal="file_selected" from="GUI/ExportDialog" to="." method="_on_export_dialog_file_selected"]
-[connection signal="file_selected" from="GUI/ImportDialog" to="." method="import_dxf"]
+[connection signal="file_selected" from="GUI/DXFExportDialog" to="." method="_on_export_dialog_file_selected"]
+[connection signal="file_selected" from="GUI/DWGExportDialog" to="." method="_on_dwg_export_dialog_file_selected"]
+[connection signal="file_selected" from="GUI/DXFImportDialog" to="." method="import_dxf"]
+[connection signal="file_selected" from="GUI/DWGImportDialog" to="." method="_on_dwg_import_dialog_file_selected"]
+[connection signal="timeout" from="FPSTimer" to="." method="_on_fps_timer_timeout"]

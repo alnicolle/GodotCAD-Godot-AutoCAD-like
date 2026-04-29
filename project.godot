@@ -30,10 +30,7 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/fuku/plugin.cfg")
+window/vsync/vsync_mode=3
 
 [internationalization]
 
@@ -42,4 +39,6 @@ locale/test="en"
 
 [rendering]
 
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 anti_aliasing/quality/msaa_2d=3

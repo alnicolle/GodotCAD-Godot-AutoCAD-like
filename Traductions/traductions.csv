@@ -1,5 +1,6 @@
 ﻿id;fr;en
 UI_2DD;Dessin 2D;2D Drawing
+UI_INSER;Insertion;Insertion
 UI_RDM;Calcul Structure;Structural Analysis
 UI_2DD_POLYLINE;Polyligne;Polyline
 UI_2DD_CIRCLE;Cercle;Circle
@@ -13,11 +14,13 @@ UI_2DD_COPY;Copier;Copy
 UI_2DD_ARRAY;Réseau;Array
 UI_2DD_FILLET;Congé;Fillet
 UI_2DD_TRIM;Ajuster;Trim
-UI_2DD_DXF_EXPORT;Export DXF;Export DXF
-UI_2DD_DXF_IMPORT;Import DXF;Import DXF
 UI_2DD_LAYER;Calques;Layers
 UI_2DD_LINETYPE;Type de la ligne;Linetype
 UI_2DD_LINEWEIGHT;Largeur de la ligne;Lineweight
+UI_INSER_DXF_EXPORT;Export DXF;Export DXF
+UI_INSER_DXF_IMPORT;Import DXF;Import DXF
+UI_INSER_DWG_EXPORT;Export DWG;Export DWG
+UI_INSER_DWG_IMPORT;Import DWG;Import DWG
 UI_RDM_STRAIGHT_BEAM;Barre droite;Straight beam
 UI_RDM_CURVED_BEAM;Barre Arc;Curved beam
 UI_RDM_SIMPLE_SUPPORT;Appui simple;Simple support

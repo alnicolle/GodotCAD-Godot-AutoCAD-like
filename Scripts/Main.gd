@@ -4,6 +4,8 @@ extends Node2D
 @export var gui : CanvasLayer
 @export var export_dialog : FileDialog
 @export var import_dialog : FileDialog
+@export var dwg_export_dialog : FileDialog
+@export var dwg_import_dialog : FileDialog
 @export var btn_import : Button
 @export var console : PanelContainer
 @export var top_ribbon : Panel
@@ -23,6 +25,8 @@ extends Node2D
 @export var btn_support_encastrement : Button
 @export var btn_force_ponctuelle : Button
 @export var btn_force_distributed : Button
+@export var btn_export_dwg : Button
+@export var btn_import_dwg : Button
 @export var properties_panel : PanelContainer
 @export var window_properties : Window
 
@@ -39,14 +43,39 @@ extends Node2D
 @onready var layer_menu = $GUI/Layout/TopRibbon/VBoxContainer/TabContainer/Dessin2D/Calques/CalquesCol2/HBoxContainer/BtnLayerQuick
 @onready var cursor_manager = $CursorManager
 
-# Référence à la caméra
+# Espace CAO Objet
 @onready var camera = $World/Camera2D
+
+# Espace CAO Présentation
+@onready var tab_bar = $GUI/Layout/BottomBar/HBoxContainer/SpacerLeft/VBoxContainer/WorkspaceTabBar
+@onready var workspace_paper = $WorkspacePaper
+@onready var layout_camera = $WorkspacePaper/LayoutCamera
+@onready var presentation_viewport = $WorkspacePaper/CADViewportPanel/SubViewportContainer/SubViewport
+@onready var paper_sheet = $WorkspacePaper/PaperSheet
 
 
 var ui_hover_counter = 0
 var undo_redo = UndoRedo.new()
 
 var rdm_controller: RDMController
+
+# --- VARIABLES DESSIN DE FENETRE PSPACE ---
+var is_drawing_viewport := false
+var viewport_start_pos := Vector2.ZERO
+var viewport_preview: ReferenceRect = null
+const CADViewportEntityClass = preload("res://Scripts/CADViewportEntity.gd")
+var has_framed_paper_once = false
+
+func _set_visibility_layer_recursive(node: Node, layer: int):
+	if node is CanvasItem:
+		node.visibility_layer = layer
+	for child in node.get_children():
+		# On ne veut pas affecter l'intérieur de CADLayoutViewport car 
+		# le panneau est le contenant qui est en Layer 3, mais le SubViewport à l'intérieur
+		# vit dans son propre rendering space (et si on le change, on casse sa vue)
+		if child is SubViewportContainer or child is SubViewport:
+			continue
+		_set_visibility_layer_recursive(child, layer)
 
 
 
@@ -55,6 +84,31 @@ func _ready():
 	rdm_controller = RDMController.new()
 	rdm_controller.main_node = self
 	add_child(rdm_controller)
+	
+	# Magie AutoCAD (Partage du monde physique 2D)
+	if presentation_viewport and world:
+		presentation_viewport.world_2d = world.get_viewport().world_2d
+		
+	# Espace Papier: Création d'un container métier pour les entités (Viewports, cartouches)
+	if workspace_paper and not workspace_paper.has_node("Entities"):
+		var ws_entities = Node2D.new()
+		ws_entities.name = "Entities"
+		workspace_paper.add_child(ws_entities)
+		
+	# Isolation Visuelle du WorkspacePaper (Layer 3 binaire v=4)
+	if workspace_paper:
+		_set_visibility_layer_recursive(workspace_paper, 4)
+	
+	if tab_bar:
+		tab_bar.tab_changed.connect(_on_tab_bar_tab_changed)
+		
+	# État initial Espace Objet
+	if selection_manager:
+		selection_manager.active_entities_container = world.get_node("Entities")
+	if workspace_paper:
+		workspace_paper.visible = false
+	if camera:
+		camera.make_current()
 	
 	# Connexions existantes
 	camera.zoom_changed.connect(world.update_lines_width)
@@ -119,6 +173,39 @@ func _ready():
 		)
 	else:
 		print("WARNING: btn_force_distributed non trouvé")
+
+	# Connexions des boutons DWG
+	if btn_export_dwg:
+		btn_export_dwg.pressed.connect(_on_export_dwg_pressed)
+	else:
+		print("WARNING: btn_export_dwg non trouvé")
+		
+	if btn_import_dwg:
+		btn_import_dwg.pressed.connect(_on_import_dwg_pressed)
+	else:
+		print("WARNING: btn_import_dwg non trouvé")
+	
+	
+	# 1. On récupère l'écran sur lequel se trouve actuellement la fenêtre de GodotCAD
+	var ecran_actuel = DisplayServer.window_get_current_screen()
+	
+	# 2. On demande à Windows quel est le taux de rafraîchissement de cet écran
+	var taux_rafraichissement = DisplayServer.screen_get_refresh_rate(ecran_actuel)
+	
+	# 3. Sécurité : Parfois Windows renvoie 0.0 si c'est un écran virtuel ou mal détecté
+	if taux_rafraichissement > 0.0:
+		# On bride Godot exactement à la fréquence de l'écran
+		Engine.max_fps = int(taux_rafraichissement)
+		print("Écran détecté à ", int(taux_rafraichissement), "Hz. FPS bridés.")
+	else:
+		# Valeur de secours par défaut
+		Engine.max_fps = 60
+		print("Taux non détecté. FPS bridés à 60 par défaut.")
+		
+	# 4. Le combo ultime pour un logiciel CAO : 
+	# Godot s'endort si on ne touche pas à la souris !
+	OS.low_processor_usage_mode = true
+	OS.low_processor_usage_mode_sleep_usec = 2000
 
 	
 	
@@ -220,6 +307,41 @@ func _ready():
 		get_viewport().gui_release_focus()
 	)
 
+
+func _on_tab_bar_tab_changed(tab: int) -> void:
+	match tab:
+		0: # Objet
+			if workspace_paper:
+				workspace_paper.visible = false
+			if camera:
+				camera.make_current()
+			if selection_manager:
+				selection_manager.active_entities_container = world.get_node("Entities")
+				selection_manager.camera = camera
+		1: # Présentation
+			if workspace_paper:
+				workspace_paper.visible = true
+			if layout_camera:
+				layout_camera.make_current()
+			if selection_manager:
+				selection_manager.active_entities_container = workspace_paper.get_node("Entities")
+				selection_manager.camera = layout_camera
+				
+				# Cadrage parfait automatique de la feuille (Une seule fois !)
+				if paper_sheet and not has_framed_paper_once:
+					has_framed_paper_once = true
+					var pt_size = paper_sheet.size
+					var pt_pos = paper_sheet.position
+					var center = pt_pos + pt_size / 2.0
+					layout_camera.global_position = center
+					
+					var screen_size = get_viewport().get_visible_rect().size
+					var scale_x = screen_size.x / (pt_size.x * 1.1)
+					var scale_y = screen_size.y / (pt_size.y * 1.1)
+					var min_scale = min(scale_x, scale_y)
+					layout_camera.zoom = Vector2(min_scale, min_scale)
+					if layout_camera.has_user_signal("zoom_changed") or layout_camera.has_signal("zoom_changed"):
+						layout_camera.emit_signal("zoom_changed", min_scale)
 
 func _setup_properties_ui():
 	# --- 1. BOUTON TYPE DE LIGNE ---
@@ -373,6 +495,14 @@ func _on_import_pressed():
 	# Ouvre la fenêtre d'OUVERTURE
 	import_dialog.popup_centered()
 
+func _on_export_dwg_pressed():
+	# Ouvre la fenêtre de SAUVEGARDE DWG
+	dwg_export_dialog.popup_centered()
+
+func _on_import_dwg_pressed():
+	# Ouvre la fenêtre d'OUVERTURE DWG
+	dwg_import_dialog.popup_centered()
+
 # Signal du ExportDialog
 func _on_export_dialog_file_selected(path):
 	# On appelle le service en lui passant le chemin ET le monde (pour qu'il trouve les entités)
@@ -393,6 +523,14 @@ func import_dxf(filepath: String):
 	# On délègue toute la logique complexe au service
 	# On passe 'world' pour qu'il puisse faire 'world.spawn_circle' etc.
 	DXFService.import_dxf(filepath, self)
+
+# Signal du DWG Export Dialog
+func _on_dwg_export_dialog_file_selected(path: String) -> void:
+	DWGService.export_to_dwg(path, self)
+
+# Signal du DWG Import Dialog  
+func _on_dwg_import_dialog_file_selected(path: String) -> void:
+	DWGService.import_from_dwg(path, self)
 
 
 # --- LOGIQUE DE COMMANDE ---
@@ -443,6 +581,13 @@ func _on_console_command(text: String):
 		"IMPORT_DXF":
 			_on_import_pressed()
 			console.log_message("Ouverture fenêtre Import...", Color.CYAN)
+			
+		"FMULT", "MVIEW":
+			if tab_bar.current_tab == 1:
+				start_drawing_viewport()
+				console.log_message("Spécifiez le premier coin de la fenêtre...", Color.GREEN)
+			else:
+				console.log_message("Vous devez être dans l'espace Présentation pour créer une fenêtre.", Color.RED)
 			
 		"ZOOM_ETENDU", "ZE":
 			$World/Camera2D.zoom_extents() 
@@ -512,6 +657,46 @@ func _on_console_command(text: String):
 			console.log_message("Commande inconnue : " + cmd, Color.RED)
 			
 func _input(event):
+	# --- GESTION CREATION DE FENETRE DE PRESENTATION (FMULT) ---
+	if is_drawing_viewport and tab_bar.current_tab == 1:
+		# Echap pour annuler
+		if event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed:
+			is_drawing_viewport = false
+			if viewport_preview:
+				viewport_preview.queue_free()
+				viewport_preview = null
+			console.log_message("Création de fenêtre annulée.", Color.ORANGE)
+			get_viewport().set_input_as_handled()
+			return
+			
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			if viewport_preview == null:
+				viewport_start_pos = layout_camera.get_global_mouse_position()
+				viewport_preview = ReferenceRect.new()
+				viewport_preview.editor_only = false
+				viewport_preview.border_color = Color(0.8, 0.8, 0.8)
+				viewport_preview.border_width = 2.0
+				workspace_paper.add_child(viewport_preview)
+				viewport_preview.position = viewport_start_pos
+				viewport_preview.size = Vector2.ZERO
+			else:
+				var end_pos = layout_camera.get_global_mouse_position()
+				is_drawing_viewport = false
+				create_viewport_at(viewport_start_pos, end_pos)
+				if viewport_preview:
+					viewport_preview.queue_free()
+					viewport_preview = null
+			get_viewport().set_input_as_handled()
+			return
+			
+		elif event is InputEventMouseMotion and viewport_preview != null:
+			var current_pos = layout_camera.get_global_mouse_position()
+			var rect = Rect2(viewport_start_pos, Vector2.ZERO).expand(current_pos)
+			viewport_preview.position = rect.position
+			viewport_preview.size = rect.size
+			get_viewport().set_input_as_handled()
+			return
+
 	# --- RDM : PLACEMENT PRIORITAIRE (BLOQUE LA SÉLECTION/GRIPS) ---
 	if ui_hover_counter <= 0 and rdm_controller and rdm_controller.is_placement_active():
 		if rdm_controller.handle_input(event):
@@ -638,6 +823,47 @@ func _unhandled_input(event):
 				
 				get_viewport().set_input_as_handled()
 
+
+# --- FONCTIONS DE CREATION DE FENETRE PSPACE ---
+func start_drawing_viewport():
+	is_drawing_viewport = true
+
+func create_viewport_at(p1: Vector2, p2: Vector2):
+	var rect = Rect2(p1, Vector2.ZERO).expand(p2)
+	if rect.size.x < 10 or rect.size.y < 10:
+		console.log_message("Fenêtre trop petite, annulée.", Color.RED)
+		return
+		
+	var vp = CADViewportEntityClass.new()
+	
+	# Construction des points : 4 sommets + 1er point répété pour fermer la polyligne
+	# (CADEntity._draw() utilise draw_polyline qui n'a pas de mode "closed"
+	# -> on duplique le 1er point pour fermer visuellement, et draw_grips n'en affiche que 4)
+	vp.points = PackedVector2Array([
+		rect.position,
+		Vector2(rect.end.x, rect.position.y),
+		rect.end,
+		Vector2(rect.position.x, rect.end.y),
+		rect.position  # Fermeture
+	])
+	
+	# Force la géométrie à se dessiner
+	vp.default_color = Color.WHITE
+	
+	# Insertion dans le dossier CAO dédié de Paper Space
+	var entities_node = workspace_paper.get_node_or_null("Entities")
+	if entities_node:
+		entities_node.add_child(vp)
+	else:
+		workspace_paper.add_child(vp)
+	
+	# Magie AutoCAD: on connecte la vue !
+	if vp.viewport_panel:
+		var internal_viewport = vp.viewport_panel.get_node_or_null("SubViewportContainer/SubViewport")
+		if internal_viewport:
+			internal_viewport.world_2d = world.get_viewport().world_2d
+		
+	console.log_message("Fenêtre de présentation créée.", Color.GREEN)
 
 	
 func _process(delta):

@@ -27,6 +27,7 @@ extends Node2D
 @export var snap_manager : HBoxContainer 
 @export var layer_manager : Node
 @export var camera : Camera2D 
+@export var active_entities_container : Node2D
 
 signal selection_changed(selected_list)
 
@@ -1249,8 +1250,12 @@ func deselect_all():
 		queue_redraw()
 		return
 	var entities = _get_all_flat_entities()
+	var renderer = world.get_node_or_null("EntitiesRenderer") if world else null
 	for ent in entities:
 		ent.set_selected(false)
+		# --- GESTION UNPACKING : REBAKING LORS DE LA DÉSÉLECTION ---
+		if ent.has_meta("unpacked_data") and renderer:
+			DXFBaker.rebake_unpacked_entity(ent, renderer)
 	GlobalLogger.info(tr("MSG_CONSOLE_SELECTION_3"))
 	
 	# --- AJOUT SIGNAL ---
@@ -1281,12 +1286,56 @@ func finish_selection(end_pos_world: Vector2):
 			touched_entities.append(ent)
 			hit_something = true
 
+	# ===== UNPACKING DES OBJETS VIRTUELS =====
+	var renderer = world.get_node_or_null("EntitiesRenderer") if world else null
+	if renderer:
+		if is_click:
+			var virtual_ent = renderer.get_entity_at_position(end_pos_world, threshold_world)
+			if virtual_ent and not virtual_ent.is_hidden:
+				# Vérification verrouillage calque optionnelle
+				var is_locked = false
+				if layer_manager and layer_manager.has_method("get_layer_data"):
+					var l_data = layer_manager.get_layer_data(virtual_ent.layer_name)
+					if l_data and l_data.locked: is_locked = true
+					
+				if not is_locked:
+					var unpacked_node = DXFBaker.unpack_entity(virtual_ent, world, renderer)
+					if unpacked_node:
+						touched_entities.append(unpacked_node)
+						hit_something = true
+		else:
+			var virtual_ents = renderer.get_entities_in_rect(rect)
+			for virtual_ent in virtual_ents:
+				if not virtual_ent.is_hidden:
+					var is_locked = false
+					if layer_manager and layer_manager.has_method("get_layer_data"):
+						var l_data = layer_manager.get_layer_data(virtual_ent.layer_name)
+						if l_data and l_data.locked: is_locked = true
+						
+					if not is_locked:
+						var select_it = false
+						if (end_pos_world.x < drag_start_pos.x):
+							select_it = virtual_ent.intersects_rect(rect)
+						else:
+							select_it = virtual_ent.is_inside_rect(rect)
+						
+						if select_it:
+							var unpacked_node = DXFBaker.unpack_entity(virtual_ent, world, renderer)
+							if unpacked_node:
+								touched_entities.append(unpacked_node)
+								hit_something = true
+
 	if not hit_something and is_click and not keep_previous:
 		deselect_all()
 		return
 
 	for ent in touched_entities:
-		ent.set_selected(true)
+		if keep_previous and ent.is_selected:
+			ent.set_selected(false)
+			if ent.has_meta("unpacked_data") and renderer:
+				DXFBaker.rebake_unpacked_entity(ent, renderer)
+		else:
+			ent.set_selected(true)
 	
 	if hit_something: 
 		GlobalLogger.info(str(count_selected()) + tr("MSG_CONSOLE_SELECTION_1"))
@@ -1475,8 +1524,8 @@ func _create_ghost_from_entity(original_ent: Node2D):
 	ghost.set_meta("is_ghost", true)
 	
 	# 4. On l'ajoute au monde (dans Entities pour que SnapManager le voie)
-	if world:
-		world.get_node("Entities").add_child(ghost)
+	if active_entities_container:
+		active_entities_container.add_child(ghost)
 	
 	# 5. On le stocke pour pouvoir le supprimer plus tard
 	active_ghosts.append(ghost)
@@ -1497,10 +1546,9 @@ func _clear_ghosts():
 # Récupère tous les objets CAD, qu'ils soient à la racine ou dans des calques visibles
 func _get_all_flat_entities() -> Array:
 	var result = []
-	if not world:
-		return result
+	if not active_entities_container: return result
 		
-	var root = world.get_node("Entities")
+	var root = active_entities_container
 	
 	for child in root.get_children():
 		# Cas 1 : C'est un objet direct (héritage ou fallback)
@@ -1595,9 +1643,9 @@ func apply_copy_to_selection(offset: Vector2):
 	# --- HELPERS LOGIQUE ---
 
 func _get_snap_pos(mouse_pos, exclude_list) -> Vector2:
-	if snap_manager and world:
+	if snap_manager and active_entities_container:
 		return snap_manager.get_snapped_position(
-			mouse_pos, world.get_node("Entities"), camera.zoom.x, exclude_list, -1
+			mouse_pos, active_entities_container, camera.zoom.x, exclude_list, -1
 		)
 	return mouse_pos
 
@@ -1631,6 +1679,11 @@ func _copy_custom_properties(source, target):
 	if "lineweight" in source:
 		target.lineweight = source.lineweight
 	# ----------------------------------------
+
+	# --- SÉPARATION DES OBJETS CLONÉS ---
+	# Si on copie un objet "Unpacked", il ne doit pas pointer vers la même donnée pure !
+	if target.has_meta("unpacked_data"):
+		target.remove_meta("unpacked_data")
 
 	target.is_selected = false
 
@@ -1673,8 +1726,8 @@ func _store_ghosts_from_clipboard():
 		ghost.set_meta("is_ghost", true)
 		
 		# Ajout au monde
-		if world:
-			world.get_node("Entities").add_child(ghost)
+		if active_entities_container:
+			active_entities_container.add_child(ghost)
 		active_ghosts.append(ghost)
 		ghost.queue_redraw()
 		
@@ -1702,11 +1755,11 @@ func _store_ghosts_from_clipboard():
 
 func apply_paste_from_clipboard(offset: Vector2):
 	var count = 0
-	if not world:
+	if not active_entities_container:
 		GlobalLogger.warning(tr("MSG_CONSOLE_ARC_1"))
 		return
 		
-	var entities_root = world.get_node("Entities") 
+	var entities_root = active_entities_container 
 	
 	for item in clipboard:
 		var new_obj = item.duplicate()
@@ -2169,11 +2222,25 @@ func _action_scale_entities(entities: Array, pivot: Vector2, factor: float):
 				ent.points[i] *= factor
 
 func _get_entity_under_mouse(pos: Vector2) -> Node2D:
-	var entities = _get_all_flat_entities()
 	var aperture = 10.0 / camera.zoom.x
+	
+	# 1. Vérifier les objets physiques d'abord
+	var entities = _get_all_flat_entities()
 	for ent in entities:
 		if ent.hit_test(pos, aperture):
 			return ent
+			
+	# 2. Vérifier les objets virtuels
+	var renderer = world.get_node_or_null("EntitiesRenderer") if world else null
+	if renderer:
+		var virtual_ent = renderer.get_entity_at_position(pos, aperture)
+		if virtual_ent and not virtual_ent.is_hidden:
+			# Extraire et le rendre physique pour que la commande Offset/Trim l'utilise!
+			var unpacked_node = DXFBaker.unpack_entity(virtual_ent, world, renderer)
+			if unpacked_node:
+				unpacked_node.set_selected(true) # On le force en sélection pour que le rebake finisse par le re-cuire
+				return unpacked_node
+				
 	return null
 
 func _store_ghost_for_offset(ent: Node2D):

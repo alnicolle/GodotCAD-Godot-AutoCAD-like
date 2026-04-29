@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://4agdnq5bei4w"]
+
+[ext_resource type="Script" uid="uid://dbyxcygx75cra" path="res://Scripts/CADLayoutViewport.gd" id="1_t2kie"]
+[ext_resource type="Script" uid="uid://wacwkvnql1x0" path="res://Scripts/CameraManager.gd" id="2_iqg0y"]
+
+[node name="CADViewportPanel" type="Control" unique_id=34243318]
+custom_minimum_size = Vector2(800, 600)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 800.0
+offset_bottom = 600.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_t2kie")
+
+[node name="SelectionBorder" type="ReferenceRect" parent="." unique_id=273306099]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=977861866]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 618.0
+offset_top = 241.0
+offset_right = 618.0
+offset_bottom = 241.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer" unique_id=1991956525]
+handle_input_locally = false
+canvas_cull_mask = 4294967293
+size = Vector2i(2720, 1680)
+render_target_update_mode = 4
+
+[node name="ModelSpaceCamera2D" type="Camera2D" parent="SubViewportContainer/SubViewport" unique_id=508081219]
+script = ExtResource("2_iqg0y")

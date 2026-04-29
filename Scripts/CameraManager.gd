@@ -15,6 +15,19 @@ var zoom_speed = 0.1
 # _input reçoit les événements MÊME si la fenêtre n'a pas le focus.
 # C'est ce qui permet de bouger la caméra dès le démarrage sans cliquer.
 func _input(event):
+	# SÉCURITÉ 0 : Ne réagir que si cette caméra est la caméra active de son viewport
+	if not is_current(): return
+	
+	# SÉCURITÉ 0.5 : Si on est dans un sous-écran (Viewport AutoCAD), 
+	# on ne réagit que si la souris est dedans ET que le cadre l'autorise (actif)
+	var vp = get_viewport()
+	if vp is SubViewport:
+		var container = vp.get_parent()
+		if container is SubViewportContainer and container.mouse_filter != Control.MOUSE_FILTER_PASS:
+			return
+		var mouse_pos = vp.get_mouse_position()
+		if not Rect2(Vector2.ZERO, vp.size).has_point(mouse_pos):
+			return
 	
 	# SÉCURITÉ 1 : Si la souris est sur une interface bloquante (Bouton, Panel...)
 	# On laisse l'interface gérer l'événement.
@@ -55,7 +68,12 @@ func _input(event):
 
 # --- FONCTION ZOOM ETENDU (Inchangée) ---
 func zoom_extents():
-	if not entities_container: return
+	if not entities_container: 
+		# If attached to a Camera without entities (like LayoutCamera), just reset
+		position = Vector2.ZERO
+		zoom = Vector2(1, 1)
+		zoom_changed.emit(zoom.x)
+		return
 
 	var all_items = _get_all_visible_entities(entities_container)
 	if all_items.is_empty():

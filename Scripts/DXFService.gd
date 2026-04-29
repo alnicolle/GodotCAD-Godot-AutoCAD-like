@@ -163,6 +163,35 @@ static func import_dxf(filepath: String, main_node: Node):
 						if code == "20": temp_points[-1].y = -float(value)
 
 	file.close()
+
+	# Appel au DXFBaker (en imaginant que EntitiesRenderer est dans ton World)
+	var renderer = main_node.world.get_node_or_null("EntitiesRenderer")
+	var is_new_renderer = false
+	if not renderer:
+		GlobalLogger.warning("EntitiesRenderer introuvable dans World. Création automatique en cours...")
+		renderer = Node2D.new()
+		renderer.name = "EntitiesRenderer"
+		renderer.set_script(load("res://Scripts/EntitiesRenderer.gd"))
+		is_new_renderer = true
+		
+	# Mettre à jour les dépendances AVANT l'add_child
+	if renderer.get("camera") == null and main_node.get("camera") != null:
+		renderer.set("camera", main_node.camera)
+		if not is_new_renderer and not main_node.camera.is_connected("zoom_changed", renderer._on_camera_changed):
+			main_node.camera.connect("zoom_changed", renderer._on_camera_changed)
+			
+	if renderer.get("layer_manager") == null and main_node.get("layer_manager") != null:
+		renderer.set("layer_manager", main_node.layer_manager)
+		if not is_new_renderer and not main_node.layer_manager.is_connected("layers_changed", renderer._on_layers_changed):
+			main_node.layer_manager.connect("layers_changed", renderer._on_layers_changed)
+			
+	if renderer.get("selection_manager") == null and main_node.get("selection_manager") != null:
+		renderer.set("selection_manager", main_node.selection_manager)
+		
+	if is_new_renderer:
+		main_node.world.add_child(renderer)
+		
+	DXFBaker.bake_imported_scene(main_node.world, renderer)
 	GlobalLogger.success("Import terminé.")
 
 # ------------------------------------------------------------------------------
@@ -170,17 +199,67 @@ static func import_dxf(filepath: String, main_node: Node):
 # ------------------------------------------------------------------------------
 static func save_dxf(filepath: String, main_node: Node, use_2000_format: bool = true):
 	if use_2000_format:
-		save_dxf_2000(filepath, main_node)
+		return save_dxf_2000(filepath, main_node)
 	else:
-		save_dxf_r12_legacy(filepath, main_node)
+		return save_dxf_r12_legacy(filepath, main_node)
 
 # ------------------------------------------------------------------------------
 # EXPORTATION (Format DXF 2000+)
 # ------------------------------------------------------------------------------
 
+# --- PARSEUR DE TYPES DE LIGNES DYNAMIQUES ---
+static func _load_acadiso_linetypes(filepath: String) -> Dictionary:
+	var defs = {
+		"BYLAYER": {"desc": "", "length": 0.0, "elements": []},
+		"BYBLOCK": {"desc": "", "length": 0.0, "elements": []},
+		"CONTINUOUS": {"desc": "Solid line", "length": 0.0, "elements": []}
+	}
+	
+	if not FileAccess.file_exists(filepath):
+		GlobalLogger.error("acadiso.txt introuvable à : " + filepath)
+		return defs
+		
+	var file = FileAccess.open(filepath, FileAccess.READ)
+	var current_name = ""
+	var current_desc = ""
+	
+	while not file.eof_reached():
+		var line = file.get_line().strip_edges()
+		if line.begins_with(";;") or line.is_empty(): continue
+		
+		# Lecture du nom et description (ex: *AXES,Centre ____ _ ____)
+		if line.begins_with("*"):
+			var parts = line.split(",", true, 1)
+			current_name = parts[0].substr(1).strip_edges().to_upper()
+			current_desc = parts[1].strip_edges() if parts.size() > 1 else ""
+			
+		# Lecture de la géométrie (ex: A, 31.75, -6.35, 6.35, -6.35)
+		elif line.to_upper().begins_with("A,") and current_name != "":
+			var elements_str = line.substr(2).split(",")
+			var elements = []
+			var length = 0.0
+			
+			for e in elements_str:
+				var e_str = e.strip_edges()
+				if e_str.begins_with("["): 
+					# ASTUCE : C'est une forme complexe. Pour éviter le crash d'AutoCAD, 
+					# on la remplace par un espace vide standard (-2.54)
+					elements.append(-2.54)
+					length += 2.54
+					continue
+				var val = e_str.to_float()
+				elements.append(val)
+				length += abs(val)
+			
+			defs[current_name] = {"desc": current_desc, "length": length, "elements": elements}
+			current_name = ""
+	file.close()
+	return defs
+
 # Gestionnaire de handles global pour l'exportation DXF
 class HandleManager:
-	var current_handle_int: int = 1
+	# On démarre à 4096 (0x1000) pour esquiver la mémoire de LibreDWG
+	var current_handle_int: int = 4096 
 	
 	func get_new_handle() -> String:
 		var hex_string = "%X" % current_handle_int
@@ -189,12 +268,13 @@ class HandleManager:
 
 static func save_dxf_2000(filepath: String, main_node: Node):
 	var file = FileAccess.open(filepath, FileAccess.WRITE)
-	if not file: return
+	if not file: 
+		return false
 
 	var handle_mgr = HandleManager.new()
 
 	# 1. PRÉ-GÉNÉRATION DES HANDLES CLÉS (pour garantir la cohérence des pointeurs)
-	var handle_root_dict = handle_mgr.get_new_handle()
+	var handle_root_dict = "C"  # Standard AutoCAD
 	var handle_dict_acad_group = handle_mgr.get_new_handle()
 	var handle_dict_acad_layout = handle_mgr.get_new_handle()
 	var handle_dict_acad_mlinestyle = handle_mgr.get_new_handle()
@@ -208,11 +288,11 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	var handle_plotstyle_dict = handle_mgr.get_new_handle()
 	var handle_placeholder = handle_mgr.get_new_handle()  # Placeholder obligatoire
 	
-	var handle_block_record_model = handle_mgr.get_new_handle()
-	var handle_block_model = handle_mgr.get_new_handle()
+	var handle_block_record_model = "1F" 
+	var handle_block_record_paper = "1E"
 	var handle_endblk_model = handle_mgr.get_new_handle()
-	var handle_block_record_paper = handle_mgr.get_new_handle()
-	var handle_block_paper = handle_mgr.get_new_handle()
+	var handle_block_model = handle_mgr.get_new_handle()
+	var handle_block_paper = handle_mgr.get_new_handle()  # Variable manquante ajoutée
 	var handle_endblk_paper = handle_mgr.get_new_handle()
 
 	# 2. HEADER (DXF 2000+ = AC1015) complet
@@ -220,12 +300,63 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	file.store_line("2"); file.store_line("HEADER")
 	file.store_line("9"); file.store_line("$ACADVER")
 	file.store_line("1"); file.store_line("AC1015")  # DXF 2000+
+
 	file.store_line("9"); file.store_line("$HANDSEED")
-	file.store_line("5"); file.store_line("FFFF")
+	file.store_line("5"); file.store_line("10000")
+	
 	file.store_line("9"); file.store_line("$INSBASE")
 	file.store_line("10"); file.store_line("0.0")
 	file.store_line("20"); file.store_line("0.0")
 	file.store_line("30"); file.store_line("0.0")
+
+	# --- AJOUT DES VARIABLES GLOBALES SCU (MODEL & PAPER) ---
+	file.store_line("9"); file.store_line("$UCSORG")
+	file.store_line("10"); file.store_line("0.0"); file.store_line("20"); file.store_line("0.0"); file.store_line("30"); file.store_line("0.0")
+	file.store_line("9"); file.store_line("$UCSXDIR")
+	file.store_line("10"); file.store_line("1.0"); file.store_line("20"); file.store_line("0.0"); file.store_line("30"); file.store_line("0.0")
+	file.store_line("9"); file.store_line("$UCSYDIR")
+	file.store_line("10"); file.store_line("0.0"); file.store_line("20"); file.store_line("1.0"); file.store_line("30"); file.store_line("0.0")
+	
+	# INDISPENSABLE POUR ÉVITER LE BUG "AXE Y NON UNITAIRE"
+	file.store_line("9"); file.store_line("$PUCSORG")
+	file.store_line("10"); file.store_line("0.0"); file.store_line("20"); file.store_line("0.0"); file.store_line("30"); file.store_line("0.0")
+	file.store_line("9"); file.store_line("$PUCSXDIR")
+	file.store_line("10"); file.store_line("1.0"); file.store_line("20"); file.store_line("0.0"); file.store_line("30"); file.store_line("0.0")
+	file.store_line("9"); file.store_line("$PUCSYDIR")
+	file.store_line("10"); file.store_line("0.0"); file.store_line("20"); file.store_line("1.0"); file.store_line("30"); file.store_line("0.0")
+
+	# --- AJOUT DES VARIABLES GLOBALES SCU POUR LIBREDWG/AUTOCAD ---
+	file.store_line("9"); file.store_line("$UCSORG")
+	file.store_line("10"); file.store_line("0.0")
+	file.store_line("20"); file.store_line("0.0")
+	file.store_line("30"); file.store_line("0.0")
+	file.store_line("9"); file.store_line("$UCSXDIR")
+	file.store_line("10"); file.store_line("1.0")
+	file.store_line("20"); file.store_line("0.0")
+	file.store_line("30"); file.store_line("0.0")
+	file.store_line("9"); file.store_line("$UCSYDIR")
+	file.store_line("10"); file.store_line("0.0")
+	file.store_line("20"); file.store_line("1.0")
+	file.store_line("30"); file.store_line("0.0")
+	
+	# --- AJOUT DES VARIABLES PAR DÉFAUT POUR LIBREDWG ---
+	file.store_line("9"); file.store_line("$CELTSCALE"); file.store_line("40"); file.store_line("1.0")
+	file.store_line("9"); file.store_line("$LTSCALE"); file.store_line("40"); file.store_line("1.0")
+	file.store_line("9"); file.store_line("$LUNITS"); file.store_line("70"); file.store_line("2")
+	file.store_line("9"); file.store_line("$MAXACTVP"); file.store_line("70"); file.store_line("64")
+	file.store_line("9"); file.store_line("$SPLINETYPE"); file.store_line("70"); file.store_line("6")
+	file.store_line("9"); file.store_line("$SURFTAB1"); file.store_line("70"); file.store_line("6")
+	file.store_line("9"); file.store_line("$SURFTAB2"); file.store_line("70"); file.store_line("6")
+	file.store_line("9"); file.store_line("$SURFTYPE"); file.store_line("70"); file.store_line("6")
+	file.store_line("9"); file.store_line("$SURFU"); file.store_line("70"); file.store_line("6")
+	file.store_line("9"); file.store_line("$SURFV"); file.store_line("70"); file.store_line("6")
+	file.store_line("9"); file.store_line("$DIMTFAC"); file.store_line("40"); file.store_line("1.0")
+	file.store_line("9"); file.store_line("$DIMALTF"); file.store_line("40"); file.store_line("25.4")
+	file.store_line("9"); file.store_line("$DIMLFAC"); file.store_line("40"); file.store_line("1.0")
+	file.store_line("9"); file.store_line("$DIMTXT"); file.store_line("40"); file.store_line("0.18")
+	file.store_line("9"); file.store_line("$DIMALTU"); file.store_line("70"); file.store_line("2")
+	# ----------------------------------------------------
+	
 	file.store_line("9"); file.store_line("$EXTMIN")
 	file.store_line("10"); file.store_line("0.0")
 	file.store_line("20"); file.store_line("0.0")
@@ -234,6 +365,17 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	file.store_line("10"); file.store_line("1000.0")
 	file.store_line("20"); file.store_line("1000.0")
 	file.store_line("30"); file.store_line("0.0")
+	
+	# --- CORRECTION DES VARIABLES D'EN-TÊTE POUR LIBREDWG (Évite l'erreur UXAREA/UXDWG) ---
+	file.store_line("9"); file.store_line("$LIMMIN")
+	file.store_line("10"); file.store_line("0.0"); file.store_line("20"); file.store_line("0.0")
+	file.store_line("9"); file.store_line("$LIMMAX")
+	file.store_line("10"); file.store_line("1000.0"); file.store_line("20"); file.store_line("1000.0")
+	file.store_line("9"); file.store_line("$TDCREATE"); file.store_line("40"); file.store_line("2459000.0")
+	file.store_line("9"); file.store_line("$TDUPDATE"); file.store_line("40"); file.store_line("2459000.0")
+	file.store_line("9"); file.store_line("$TDINDWG"); file.store_line("40"); file.store_line("0.0")
+	# ------------------------------------------------------------------------------------
+	
 	file.store_line("0"); file.store_line("ENDSEC")
 
 	# 3. CLASSES (obligatoire en AC1015)
@@ -262,11 +404,13 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	# Table VPORT
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("VPORT")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("1")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
 	file.store_line("70"); file.store_line("1")
 	file.store_line("0"); file.store_line("VPORT")
 	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("330"); file.store_line("1")  # Propriétaire : table VPORT
 	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 	file.store_line("100"); file.store_line("AcDbViewportTableRecord")
 	file.store_line("2"); file.store_line("*Active")
@@ -304,106 +448,116 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	file.store_line("76"); file.store_line("1")
 	file.store_line("77"); file.store_line("0")
 	file.store_line("78"); file.store_line("0")
+
+	# --- AXES SCU UNIQUES (Désactive la popup AutoCAD) ---
+	file.store_line("110"); file.store_line("0.0") 
+	file.store_line("120"); file.store_line("0.0") 
+	file.store_line("130"); file.store_line("0.0") 
+	file.store_line("111"); file.store_line("1.0") 
+	file.store_line("121"); file.store_line("0.0") 
+	file.store_line("131"); file.store_line("0.0") 
+	file.store_line("112"); file.store_line("0.0") 
+	file.store_line("122"); file.store_line("1.0") 
+	file.store_line("132"); file.store_line("0.0") 
+	file.store_line("79"); file.store_line("0")
+	
 	file.store_line("0"); file.store_line("ENDTAB")
 	
-	# Table LTYPE
+	# Table LTYPE (Générée dynamiquement)
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("LTYPE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("2")
+	file.store_line("330"); file.store_line("0")
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
-	file.store_line("70"); file.store_line("5")  # 5 types obligatoires
 	
-	# 1. ByLayer (Obligatoire)
-	file.store_line("0"); file.store_line("LTYPE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
-	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")
-	file.store_line("100"); file.store_line("AcDbLinetypeTableRecord")
-	file.store_line("2"); file.store_line("ByLayer")  # Respecter la casse exacte
-	file.store_line("70"); file.store_line("0")
-	file.store_line("3"); file.store_line("")
-	file.store_line("72"); file.store_line("65")
-	file.store_line("73"); file.store_line("0")
-	file.store_line("40"); file.store_line("0.0")
+	# --- CHARGEMENT DU FICHIER ACADISO ---
+	# (MODIFIE LE CHEMIN SELON OÙ SE TROUVE TON FICHIER DANS LE JEU)
+	var acadiso_path = "res://acadiso.txt" # ou "user://acadiso.txt"
+	var linetype_defs = _load_acadiso_linetypes(acadiso_path)
+	
+	var active_ltypes = {"BYLAYER": true, "BYBLOCK": true, "CONTINUOUS": true}
+	
+	# Scan dynamique global (Calques)
+	if main_node.layer_manager:
+		for layer in main_node.layer_manager.layers:
+			if layer.has("linetype"):
+				var lt_name = layer.linetype.to_upper()
+				if lt_name == "GODOT_ISO02": lt_name = "ACAD_ISO02W100"
+				elif lt_name == "GODOT_ISO03": lt_name = "ACAD_ISO03W100"
+				if linetype_defs.has(lt_name): active_ltypes[lt_name] = true
 
-	# 2. ByBlock (Obligatoire)
-	file.store_line("0"); file.store_line("LTYPE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
-	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")
-	file.store_line("100"); file.store_line("AcDbLinetypeTableRecord")
-	file.store_line("2"); file.store_line("ByBlock")  # Respecter la casse exacte
-	file.store_line("70"); file.store_line("0")
-	file.store_line("3"); file.store_line("")
-	file.store_line("72"); file.store_line("65")
-	file.store_line("73"); file.store_line("0")
-	file.store_line("40"); file.store_line("0.0")
+	# Scan dynamique global (Entités)
+	var root_for_ltypes = main_node.world.get_node("Entities")
+	for layer_node in root_for_ltypes.get_children():
+		for child in layer_node.get_children():
+			if child is CADEntity and "linetype" in child:
+				var lt_name = child.linetype.to_upper()
+				if lt_name == "GODOT_ISO02": lt_name = "ACAD_ISO02W100"
+				elif lt_name == "GODOT_ISO03": lt_name = "ACAD_ISO03W100"
+				if linetype_defs.has(lt_name): active_ltypes[lt_name] = true
+	
+	file.store_line("70"); file.store_line(str(active_ltypes.size()))
+	
+	# Assignation de handles fixes pour éviter les doublons générés par LibreDWG
+	var ltype_handles = {"BYLAYER": "14", "BYBLOCK": "15", "CONTINUOUS": "16"}
+	
+	for lt_name in active_ltypes.keys():
+		var def = linetype_defs[lt_name]
+		file.store_line("0"); file.store_line("LTYPE")
+		
+		# On utilise le handle fixe s'il existe, sinon on en génère un nouveau
+		var lt_handle = ltype_handles[lt_name] if ltype_handles.has(lt_name) else handle_mgr.get_new_handle()
+		file.store_line("5"); file.store_line(lt_handle)  
+		
+		file.store_line("330"); file.store_line("2")
 
-	# 3. CONTINUOUS
-	file.store_line("0"); file.store_line("LTYPE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
-	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")
-	file.store_line("100"); file.store_line("AcDbLinetypeTableRecord")
-	file.store_line("2"); file.store_line("CONTINUOUS")
-	file.store_line("70"); file.store_line("0")
-	file.store_line("3"); file.store_line("Solid line")
-	file.store_line("72"); file.store_line("65")
-	file.store_line("73"); file.store_line("0")
-	file.store_line("40"); file.store_line("0.0")
-	
-	# 4. ACAD_ISO02W100
-	file.store_line("0"); file.store_line("LTYPE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
-	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")
-	file.store_line("100"); file.store_line("AcDbLinetypeTableRecord")
-	file.store_line("2"); file.store_line("ACAD_ISO02W100")
-	file.store_line("70"); file.store_line("0")
-	file.store_line("3"); file.store_line("ISO dash __ __ __ __ __ __ __ __ __ __ __ __ __ __ _")
-	file.store_line("72"); file.store_line("65")
-	file.store_line("73"); file.store_line("2")
-	file.store_line("40"); file.store_line("12.0")
-	file.store_line("49"); file.store_line("6.0")
-	file.store_line("74"); file.store_line("0")
-	file.store_line("49"); file.store_line("-6.0")
-	file.store_line("74"); file.store_line("0")
-	
-	# 5. ACAD_ISO03W100
-	file.store_line("0"); file.store_line("LTYPE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
-	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")
-	file.store_line("100"); file.store_line("AcDbLinetypeTableRecord")
-	file.store_line("2"); file.store_line("ACAD_ISO03W100")
-	file.store_line("70"); file.store_line("0")
-	file.store_line("3"); file.store_line("ISO dash space __ __ __ __ __ __ __ __ __ __ __ __ __")
-	file.store_line("72"); file.store_line("65")
-	file.store_line("73"); file.store_line("2")
-	file.store_line("40"); file.store_line("12.0")
-	file.store_line("49"); file.store_line("8.0")
-	file.store_line("74"); file.store_line("0")
-	file.store_line("49"); file.store_line("-4.0")
-	file.store_line("74"); file.store_line("0")
-	
+
+
+		file.store_line("100"); file.store_line("AcDbSymbolTableRecord")
+		file.store_line("100"); file.store_line("AcDbLinetypeTableRecord")
+		file.store_line("2"); file.store_line(lt_name) # Nom toujours en majuscule
+		file.store_line("70"); file.store_line("0")
+		file.store_line("3"); file.store_line(def["desc"])
+		file.store_line("72"); file.store_line("65")
+		file.store_line("73"); file.store_line(str(def["elements"].size()))
+		file.store_line("40"); file.store_line(str(def["length"]))
+		
+		for el in def["elements"]:
+			file.store_line("49"); file.store_line(str(el))
+			file.store_line("74"); file.store_line("0")
+			
 	file.store_line("0"); file.store_line("ENDTAB")
 	
 	# Table LAYER avec propriétés complètes
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("LAYER")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("3")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
+	
+	var custom_layers = []
+	if main_node.layer_manager: 
+		for l in main_node.layer_manager.layers:
+			if l.name != "0": custom_layers.append(l)
+	
+	# Le "+1" est strictement réservé au calque "0" (AutoCAD panique si le compte est faux)
+	file.store_line("70"); file.store_line(str(custom_layers.size() + 1))
 	
 	var layers = []
 	if main_node.layer_manager: layers = main_node.layer_manager.layers
-	file.store_line("70"); file.store_line(str(layers.size() + 1))
 	
 	# Calque 0 par défaut
 	file.store_line("0"); file.store_line("LAYER")
 	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("330"); file.store_line("3")  # Propriétaire : table LAYER
 	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 	file.store_line("100"); file.store_line("AcDbLayerTableRecord")
 	file.store_line("2"); file.store_line("0")
 	file.store_line("70"); file.store_line("0")
 	file.store_line("62"); file.store_line("7")
-	file.store_line("6"); file.store_line("CONTINUOUS")
+	file.store_line("6"); file.store_line("Continuous")
 	file.store_line("370"); file.store_line("-3")
-	file.store_line("390"); file.store_line(handle_placeholder)  # Pointeur dynamique vers ACDBPLACEHOLDER
+	file.store_line("390"); file.store_line(handle_placeholder) # <--- LIGNE VITALE À AJOUTER
 	
 	# Calques personnalisés avec leurs propriétés
 	for layer in layers:
@@ -412,33 +566,53 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 		
 		file.store_line("0"); file.store_line("LAYER")
 		file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+		file.store_line("330"); file.store_line("3")  # Propriétaire : table LAYER
 		file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 		file.store_line("100"); file.store_line("AcDbLayerTableRecord")
 		file.store_line("2"); file.store_line(lname)  # Garder la casse originale
 		file.store_line("70"); file.store_line("0")
-		file.store_line("62"); file.store_line(str(_color_to_aci(layer.color)))
 		
-		# Type de ligne
-		var lt = "CONTINUOUS"
-		if layer.has("linetype"): lt = layer.linetype
-		file.store_line("6"); file.store_line(lt)
+		# 1. Sécurité sur la couleur (256 est interdit pour un calque)
+		var color_index = _color_to_aci(layer.color)
+		var c_index = color_index if color_index != 256 else 7
+		file.store_line("62"); file.store_line(str(c_index))
+		
+		# 2. Sécurité sur le mapping du type de ligne
+		var layer_lt = "CONTINUOUS"
+		if layer.has("linetype"): layer_lt = layer.linetype
+		var write_ltype = layer_lt.to_upper()
+		
+		# On traduit l'identifiant interne de Godot vers le standard ISO d'AutoCAD
+		if write_ltype == "GODOT_ISO02": write_ltype = "ACAD_ISO02W100"
+		elif write_ltype == "GODOT_ISO03": write_ltype = "ACAD_ISO03W100"
+		
+		# --- FILET DE SÉCURITÉ ---
+		# Si le type de ligne n'est pas dans l'en-tête, on force CONTINUOUS pour éviter le crash
+		if not active_ltypes.has(write_ltype) and write_ltype != "BYLAYER":
+			write_ltype = "CONTINUOUS"
+		
+		file.store_line("6"); file.store_line(write_ltype)
 		
 		# Épaisseur
-		var lw = -3  # Par défaut
+		var lw = -3.0  # Par défaut avec valeur de secours correcte
 		if layer.has("lineweight"): lw = _godot_weight_to_dxf(layer.lineweight)
 		file.store_line("370"); file.store_line(str(lw))
-		file.store_line("390"); file.store_line(handle_placeholder)  # Pointeur dynamique vers ACDBPLACEHOLDER
-	
+		file.store_line("390"); file.store_line(handle_placeholder)
+		
+	# === LIGNE CRUCIALE POUR ÉVITER LE CRASH ACDBLAYERTABLE ===
 	file.store_line("0"); file.store_line("ENDTAB")
-	
+	# ==========================================================
+
 	# Table STYLE
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("STYLE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("4")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
 	file.store_line("70"); file.store_line("1")
 	file.store_line("0"); file.store_line("STYLE")
 	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("330"); file.store_line("4")  # Propriétaire : table STYLE
 	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 	file.store_line("100"); file.store_line("AcDbTextStyleTableRecord")
 	file.store_line("2"); file.store_line("STANDARD")
@@ -455,7 +629,8 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	# Table VIEW
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("VIEW")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("5")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
 	file.store_line("70"); file.store_line("0")
 	file.store_line("0"); file.store_line("ENDTAB")
@@ -463,7 +638,8 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	# Table UCS
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("UCS")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("6")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
 	file.store_line("70"); file.store_line("0")
 	file.store_line("0"); file.store_line("ENDTAB")
@@ -471,11 +647,13 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	# Table APPID
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("APPID")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("7")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
 	file.store_line("70"); file.store_line("1")
 	file.store_line("0"); file.store_line("APPID")
 	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("330"); file.store_line("7")  # Propriétaire : table APPID
 	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 	file.store_line("100"); file.store_line("AcDbRegAppTableRecord")
 	file.store_line("2"); file.store_line("ACAD")
@@ -485,16 +663,19 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	# Table DIMSTYLE
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("DIMSTYLE")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("8")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
 	file.store_line("70"); file.store_line("1")
 	file.store_line("100"); file.store_line("AcDbDimStyleTable")  # Classe de la table
 	file.store_line("0"); file.store_line("DIMSTYLE")
-	file.store_line("105"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("105"); file.store_line("10") # Handle officiel
+	file.store_line("330"); file.store_line("8")  # Propriétaire : table DIMSTYLE
 	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 	file.store_line("100"); file.store_line("AcDbDimStyleTableRecord")
-	file.store_line("2"); file.store_line("STANDARD")
+	file.store_line("2"); file.store_line("Standard")
 	file.store_line("70"); file.store_line("0")
+	file.store_line("143"); file.store_line("25.4") # <--- AJOUTEZ CETTE LIGNE ICI POUR CORRIGER DIMALTF
 	file.store_line("41"); file.store_line("2.5")
 	file.store_line("42"); file.store_line("2.5")
 	file.store_line("43"); file.store_line("0.625")
@@ -507,13 +688,15 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	# Table BLOCK_RECORD (obligatoire en AC1015)
 	file.store_line("0"); file.store_line("TABLE")
 	file.store_line("2"); file.store_line("BLOCK_RECORD")
-	file.store_line("5"); file.store_line(handle_mgr.get_new_handle())
+	file.store_line("5"); file.store_line("9")  # Standard AutoCAD
+	file.store_line("330"); file.store_line("0")  # Propriétaire : base de données globale
 	file.store_line("100"); file.store_line("AcDbSymbolTable")
 	file.store_line("70"); file.store_line("2")
 	
 	# Model Space
 	file.store_line("0"); file.store_line("BLOCK_RECORD")
 	file.store_line("5"); file.store_line(handle_block_record_model)
+	file.store_line("330"); file.store_line("9")  # Propriétaire : table BLOCK_RECORD
 	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 	file.store_line("100"); file.store_line("AcDbBlockTableRecord")
 	file.store_line("2"); file.store_line("*Model_Space")
@@ -525,6 +708,7 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	# Paper Space
 	file.store_line("0"); file.store_line("BLOCK_RECORD")
 	file.store_line("5"); file.store_line(handle_block_record_paper)
+	file.store_line("330"); file.store_line("9")  # Propriétaire : table BLOCK_RECORD
 	file.store_line("100"); file.store_line("AcDbSymbolTableRecord")  # Classe mère
 	file.store_line("100"); file.store_line("AcDbBlockTableRecord")
 	file.store_line("2"); file.store_line("*Paper_Space")
@@ -594,11 +778,20 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	for layer_node in root_entities.get_children():
 		if layer_node is Node2D and not (layer_node is CADEntity):
 			var layer_name = layer_node.name
+			
+			# Trouver la couleur de base du calque pour éviter de forcer l'entité
+			var layer_col = Color.WHITE
+			if main_node.layer_manager:
+				for l in main_node.layer_manager.layers:
+					if l.name == layer_name:
+						layer_col = l.color; break
+			
 			for child in layer_node.get_children():
 				if child is CADEntity: 
-					handle_mgr.current_handle_int = _write_entity_2000(file, child, layer_name, handle_mgr.current_handle_int, handle_block_record_model)
+					handle_mgr.current_handle_int = _write_entity_2000(file, child, layer_name, layer_col, active_ltypes, handle_mgr.current_handle_int, handle_block_record_model)
 		elif layer_node is CADEntity:
-			handle_mgr.current_handle_int = _write_entity_2000(file, layer_node, "0", handle_mgr.current_handle_int, handle_block_record_model)
+			# Ajout de Color.WHITE comme couleur par défaut pour le calque "0"
+			handle_mgr.current_handle_int = _write_entity_2000(file, layer_node, "0", Color.WHITE, active_ltypes, handle_mgr.current_handle_int, handle_block_record_model)
 
 	file.store_line("0"); file.store_line("ENDSEC")
 
@@ -673,7 +866,7 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	file.store_line("147"); file.store_line("1.0")
 	file.store_line("148"); file.store_line("0.0")
 	file.store_line("149"); file.store_line("0.0")
-	file.store_line("100"); file.store_line("AcDbLayout")  # Ensuite le Layout
+	file.store_line("100"); file.store_line("AcDbLayout")
 	file.store_line("1"); file.store_line("Model")
 	file.store_line("70"); file.store_line("1")
 	file.store_line("71"); file.store_line("0")
@@ -683,48 +876,24 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	file.store_line("21"); file.store_line("297.0")
 	file.store_line("12"); file.store_line("0.0")
 	file.store_line("22"); file.store_line("0.0")
-	file.store_line("13"); file.store_line("0.0")
-	file.store_line("23"); file.store_line("0.0")
+	file.store_line("32"); file.store_line("0.0")
 	file.store_line("14"); file.store_line("210.0")
 	file.store_line("24"); file.store_line("148.5")
+	file.store_line("34"); file.store_line("0.0")
 	file.store_line("15"); file.store_line("0.0")
 	file.store_line("25"); file.store_line("0.0")
-	file.store_line("16"); file.store_line("0.0")
-	file.store_line("26"); file.store_line("0.0")
-	file.store_line("17"); file.store_line("0.0")
-	file.store_line("27"); file.store_line("0.0")
-	file.store_line("90"); file.store_line("7")
+	file.store_line("35"); file.store_line("0.0")
 	file.store_line("146"); file.store_line("0.0")
 	file.store_line("13"); file.store_line("0.0")
 	file.store_line("23"); file.store_line("0.0")
-	file.store_line("70"); file.store_line("64768")
-	file.store_line("71"); file.store_line("3")
-	file.store_line("40"); file.store_line("0.0")
-	file.store_line("41"); file.store_line("0.0")
-	file.store_line("42"); file.store_line("0.0")
-	file.store_line("43"); file.store_line("0.0")
-	file.store_line("70"); file.store_line("0")
-	file.store_line("71"); file.store_line("0")
-	file.store_line("72"); file.store_line("0")
-	file.store_line("73"); file.store_line("0")
-	file.store_line("74"); file.store_line("0")
-	file.store_line("75"); file.store_line("0")
+	file.store_line("33"); file.store_line("0.0")
+	file.store_line("16"); file.store_line("1.0")
+	file.store_line("26"); file.store_line("0.0")
+	file.store_line("36"); file.store_line("0.0")
+	file.store_line("17"); file.store_line("0.0")
+	file.store_line("27"); file.store_line("1.0")
+	file.store_line("37"); file.store_line("0.0")
 	file.store_line("76"); file.store_line("0")
-	file.store_line("77"); file.store_line("0")
-	file.store_line("78"); file.store_line("0")  # Integer, pas float
-	file.store_line("281"); file.store_line("0")
-	file.store_line("65"); file.store_line("1")
-	file.store_line("74"); file.store_line("0")
-	file.store_line("110"); file.store_line("0.0")
-	file.store_line("120"); file.store_line("0.0")
-	file.store_line("130"); file.store_line("0.0")
-	file.store_line("111"); file.store_line("0.0")
-	file.store_line("121"); file.store_line("0.0")
-	file.store_line("131"); file.store_line("0.0")
-	file.store_line("112"); file.store_line("0.0")
-	file.store_line("122"); file.store_line("0.0")
-	file.store_line("132"); file.store_line("0.0")
-	# Pas de pointeur 340 ici (supprimé)
 	file.store_line("330"); file.store_line(handle_block_record_model)  # Pointeur vers Model_Space
 	
 	# Layout pour Paper Space
@@ -846,9 +1015,9 @@ static func save_dxf_2000(filepath: String, main_node: Node):
 	file.store_line("0"); file.store_line("EOF")
 	file.close()
 	GlobalLogger.success("Export DXF 2000+ terminé.")
+	return true
 
-static func _write_entity_2000(file: FileAccess, ent, layer_name, current_handle_int: int, model_space_handle: String) -> int:
-	# Récupérer les propriétés de l'entité
+static func _write_entity_2000(file: FileAccess, ent, layer_name, layer_col: Color, active_ltypes: Dictionary, current_handle_int: int, model_space_handle: String) -> int:
 	var lt = "CONTINUOUS"
 	if "linetype" in ent: lt = ent.linetype
 	var lw = -3
@@ -863,11 +1032,37 @@ static func _write_entity_2000(file: FileAccess, ent, layer_name, current_handle
 		file.store_line("8"); file.store_line(layer_name)
 		
 		# --- Propriétés de style corrigées ---
-		if lt.to_upper() != "BYLAYER":
-			file.store_line("6"); file.store_line(lt)
-		if lw != -3:  # -3 correspond à l'épaisseur ByLayer en DXF
+		var write_lt = lt.to_upper()
+		if write_lt == "GODOT_ISO02": write_lt = "ACAD_ISO02W100"
+		elif write_lt == "GODOT_ISO03": write_lt = "ACAD_ISO03W100"
+		
+		# --- FILET DE SÉCURITÉ ABSOLU ---
+		# Si le type de ligne n'existe pas dans le DXF, l'entité suit le calque.
+		if not active_ltypes.has(write_lt):
+			write_lt = "BYLAYER"
+		
+		if write_lt != "BYLAYER":
+			file.store_line("6"); file.store_line(write_lt)
+			
+		if lw != -3: 
 			file.store_line("370"); file.store_line(str(lw))
-		# (On ignore volontairement le code 62 pour la couleur ByLayer)
+			
+		# Gestion de la couleur (Code 62) - Calcul strict par index entier
+		var aci = 256 # 256 = "ByLayer" par défaut
+		var ent_col = null
+		if "default_color" in ent: ent_col = ent.default_color
+		elif "default_color_val" in ent: ent_col = ent.default_color_val
+		
+		if ent_col != null and typeof(ent_col) == TYPE_COLOR:
+			var computed_aci = _color_to_aci(ent_col)
+			var layer_aci = _color_to_aci(layer_col)
+			
+			# On filtre strictement la couleur du calque ET le gris de défaut Godot (250)
+			if computed_aci != layer_aci and computed_aci != 250:
+				aci = computed_aci
+				
+		if aci != 256:
+			file.store_line("62"); file.store_line(str(aci))
 		# -------------------------------------
 		
 		file.store_line("100"); file.store_line("AcDbCircle")
@@ -884,11 +1079,37 @@ static func _write_entity_2000(file: FileAccess, ent, layer_name, current_handle
 		file.store_line("8"); file.store_line(layer_name)
 		
 		# --- Propriétés de style corrigées ---
-		if lt.to_upper() != "BYLAYER":
-			file.store_line("6"); file.store_line(lt)
-		if lw != -3:  # -3 correspond à l'épaisseur ByLayer en DXF
+		var write_lt = lt.to_upper()
+		if write_lt == "GODOT_ISO02": write_lt = "ACAD_ISO02W100"
+		elif write_lt == "GODOT_ISO03": write_lt = "ACAD_ISO03W100"
+		
+		# --- FILET DE SÉCURITÉ ABSOLU ---
+		# Si le type de ligne n'existe pas dans le DXF, l'entité suit le calque.
+		if not active_ltypes.has(write_lt):
+			write_lt = "BYLAYER"
+		
+		if write_lt != "BYLAYER":
+			file.store_line("6"); file.store_line(write_lt)
+		
+		if lw != -3: 
 			file.store_line("370"); file.store_line(str(lw))
-		# (On ignore volontairement le code 62 pour la couleur ByLayer)
+			
+		# Gestion de la couleur (Code 62) - Calcul strict par index entier
+		var aci = 256 # 256 = "ByLayer" par défaut
+		var ent_col = null
+		if "default_color" in ent: ent_col = ent.default_color
+		elif "default_color_val" in ent: ent_col = ent.default_color_val
+		
+		if ent_col != null and typeof(ent_col) == TYPE_COLOR:
+			var computed_aci = _color_to_aci(ent_col)
+			var layer_aci = _color_to_aci(layer_col)
+			
+			# On filtre strictement la couleur du calque ET le gris de défaut Godot (250)
+			if computed_aci != layer_aci and computed_aci != 250:
+				aci = computed_aci
+				
+		if aci != 256:
+			file.store_line("62"); file.store_line(str(aci))
 		# -------------------------------------
 		
 		# 1. Héritage de la classe Cercle (Obligatoire pour le centre et le rayon)
@@ -936,11 +1157,37 @@ static func _write_entity_2000(file: FileAccess, ent, layer_name, current_handle
 		file.store_line("8"); file.store_line(layer_name)
 		
 		# --- Propriétés de style corrigées ---
-		if lt.to_upper() != "BYLAYER":
-			file.store_line("6"); file.store_line(lt)
-		if lw != -3:  # -3 correspond à l'épaisseur ByLayer en DXF
+		var write_lt = lt.to_upper()
+		if write_lt == "GODOT_ISO02": write_lt = "ACAD_ISO02W100"
+		elif write_lt == "GODOT_ISO03": write_lt = "ACAD_ISO03W100"
+		
+		# --- FILET DE SÉCURITÉ ABSOLU ---
+		# Si le type de ligne n'existe pas dans le DXF, l'entité suit le calque.
+		if not active_ltypes.has(write_lt):
+			write_lt = "BYLAYER"
+		
+		if write_lt != "BYLAYER":
+			file.store_line("6"); file.store_line(write_lt)
+			
+		if lw != -3: 
 			file.store_line("370"); file.store_line(str(lw))
-		# (On ignore volontairement le code 62 pour la couleur ByLayer)
+			
+		# Gestion de la couleur (Code 62) - Calcul strict par index entier
+		var aci = 256 # 256 = "ByLayer" par défaut
+		var ent_col = null
+		if "default_color" in ent: ent_col = ent.default_color
+		elif "default_color_val" in ent: ent_col = ent.default_color_val
+		
+		if ent_col != null and typeof(ent_col) == TYPE_COLOR:
+			var computed_aci = _color_to_aci(ent_col)
+			var layer_aci = _color_to_aci(layer_col)
+			
+			# On filtre strictement la couleur du calque ET le gris de défaut Godot (250)
+			if computed_aci != layer_aci and computed_aci != 250:
+				aci = computed_aci
+				
+		if aci != 256:
+			file.store_line("62"); file.store_line(str(aci))
 		# -------------------------------------
 		
 		file.store_line("100"); file.store_line("AcDbPolyline")
@@ -1047,8 +1294,10 @@ static func _spawn_on_layer(main_node, type, points, center, radius, layer_name,
 		if "default_color_val" in ent: ent.default_color_val = target_color
 		
 		# Mapping Linetype import
-		if l_type.to_upper() == "CONTINUOUS": ent.linetype = "Continuous"
+		if l_type.to_upper() == "CONTINUOUS": ent.linetype = "CONTINUOUS"
 		elif l_type.to_upper() == "BYLAYER": ent.linetype = "ByLayer"  # On remet pour Godot
+		elif l_type.to_upper() == "ACAD_ISO02W100": ent.linetype = "GODOT_ISO02" 
+		elif l_type.to_upper() == "ACAD_ISO03W100": ent.linetype = "GODOT_ISO03" 
 		else: ent.linetype = l_type 
 		
 		if "linetype_scale" in ent:
@@ -1063,13 +1312,42 @@ static func _aci_to_color(aci: int) -> Color:
 	return Color.WHITE 
 
 static func _color_to_aci(col: Color) -> int:
-	var min_dist = 999.0
-	var best_aci = 7
-	for aci in ACI_COLORS:
-		var ref_col = ACI_COLORS[aci]
-		var d = (ref_col.r - col.r)**2 + (ref_col.g - col.g)**2 + (ref_col.b - col.b)**2
-		if d < min_dist: min_dist = d; best_aci = aci
-	return best_aci
+	var r = int(col.r * 255); var g = int(col.g * 255); var b = int(col.b * 255)
+	
+	# 1. Nuances de gris exactes
+	if r == g and g == b:
+		if r >= 250: return 7  # Blanc
+		if r <= 5: return 250  # Noir absolu
+		if r > 200: return 254
+		if r > 150: return 9
+		if r > 100: return 8
+		if r > 50: return 251
+		return 250
+	
+	# 2. Couleurs primaires pures (Rouge, Jaune, Vert, Cyan, Bleu, Magenta)
+	if r > 200 and g < 50 and b < 50: return 1
+	if r > 200 and g > 200 and b < 50: return 2
+	if r < 50 and g > 200 and b < 50: return 3
+	if r < 50 and g > 200 and b > 200: return 4
+	if r < 50 and g < 50 and b > 200: return 5
+	if r > 200 and g < 50 and b > 200: return 6
+	
+	# 3. Calcul par découpage de la roue des teintes (HLS -> ACI)
+	var h = col.h * 24.0 # AutoCAD divise sa roue en 24 secteurs
+	var hue_idx = int(round(h)) % 24
+	
+	var v = col.v
+	var s = col.s
+	
+	# Détermination de la clarté (5 niveaux d'AutoCAD)
+	var light_idx = 0
+	if v > 0.8: light_idx = 0 if s > 0.5 else 1
+	elif v > 0.6: light_idx = 2 if s > 0.5 else 3
+	else: light_idx = 4
+	
+	# La roue commence à l'index 10, chaque secteur compte 10 index
+	var aci = 10 + (hue_idx * 10) + light_idx
+	return clampi(aci, 1, 255)
 
 static func _dxf_weight_to_godot(val_int: int) -> float:
 	if val_int < 0: return -1.0
@@ -1096,7 +1374,8 @@ static func _spawn_arc_from_dxf(main_node, center: Vector2, radius: float, start
 # ------------------------------------------------------------------------------
 static func save_dxf_r12_legacy(filepath: String, main_node: Node):
 	var file = FileAccess.open(filepath, FileAccess.WRITE)
-	if not file: return
+	if not file: 
+		return false
 
 	# Header R12
 	file.store_line("0"); file.store_line("SECTION")
@@ -1137,6 +1416,7 @@ static func save_dxf_r12_legacy(filepath: String, main_node: Node):
 	file.store_line("70"); file.store_line("0")
 	file.store_line("62"); file.store_line("7")
 	file.store_line("6"); file.store_line("CONTINUOUS")
+
 	for layer in layers:
 		var lname = _sanitize_name(layer.name)
 		if lname == "0": continue
@@ -1190,6 +1470,7 @@ static func save_dxf_r12_legacy(filepath: String, main_node: Node):
 	file.store_line("0"); file.store_line("EOF")
 	file.close()
 	GlobalLogger.success("Export R12 terminé.")
+	return true
 
 static func _write_entity_r12(file: FileAccess, ent, layer_name):
 	var lt = "CONTINUOUS"
@@ -1245,7 +1526,9 @@ static func _write_entity_r12(file: FileAccess, ent, layer_name):
 		# POLYLINE R12
 		file.store_line("0"); file.store_line("POLYLINE")
 		file.store_line("8"); file.store_line(layer_name)
-		file.store_line("6"); file.store_line(lt)
+		var polyline_lt = "CONTINUOUS"
+		if ent.has("linetype"): polyline_lt = ent.linetype
+		file.store_line("6"); file.store_line(polyline_lt)
 		file.store_line("62"); file.store_line("256")
 		file.store_line("66"); file.store_line("1")
 		file.store_line("10"); file.store_line("0.0")

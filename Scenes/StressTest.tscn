@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://sy6gpvjxla8i"]
+
+[ext_resource type="Script" uid="uid://c6b7faxvc7wj4" path="res://Scripts/StressTest.gd" id="1_7sr6g"]
+[ext_resource type="Script" uid="uid://c8xqnllhaqhb8" path="res://Scripts/test_camera.gd" id="2_835qf"]
+[ext_resource type="Script" uid="uid://b2ilr1iyqvtvg" path="res://Scripts/EntitiesRenderer.gd" id="2_a2532"]
+
+[node name="StressTest" type="Node2D" unique_id=362953402]
+script = ExtResource("1_7sr6g")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2004886921]
+script = ExtResource("2_835qf")
+
+[node name="EntitiesRenderer" type="Node2D" parent="." unique_id=278412072 node_paths=PackedStringArray("camera")]
+script = ExtResource("2_a2532")
+camera = NodePath("../Camera2D")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1406311177]
+
+[node name="FPSLabel" type="Label" parent="CanvasLayer" unique_id=1505372211]
+offset_right = 40.0
+offset_bottom = 23.0

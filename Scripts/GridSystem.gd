@@ -5,6 +5,11 @@ extends Node2D
 var grid_step = 100.0   # Taille des carreaux
 var grid_color = Color(0.2, 0.2, 0.2, 0.5) # Gris discret
 
+func _ready() -> void:
+	# Placer la grille sur le calque de visibilité 2 
+	# pour pouvoir la cacher dans la fenêtre de présentation (Layout)
+	visibility_layer = 2
+
 func _process(delta):
 	# Redessine en permanence quand on bouge
 	queue_redraw()
